@@ -2,8 +2,10 @@ package com.springboot.final_back.entity;
 
 import com.springboot.final_back.constant.Type;
 import lombok.*;
+import org.springframework.security.core.parameters.P;
 
 import javax.persistence.*;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "refreshtoken")
@@ -23,9 +25,16 @@ public class RefreshToken {
 
     private Long expiresIn;
 
+    private LocalDateTime createdAt;
+
     @OneToOne
     @JoinColumn(name = "member")
     private Member member;
+
+    @PrePersist
+    public void onCreate() {
+        createdAt = LocalDateTime.now();
+    }
 
     @Builder
     public RefreshToken(Long id, String refreshToken, Long expiresIn, Member member) {
