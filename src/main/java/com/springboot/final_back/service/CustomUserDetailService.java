@@ -14,7 +14,6 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 // 스프링 시큐리티에서 제공하는 UserDetailsService 인터페이스를 구현한 클래스로, 사용자의 인증 정보를 불러오는 것이 주 역할
@@ -27,7 +26,7 @@ public class CustomUserDetailService implements UserDetailsService {
     // 생성된 UserDetails는 Service의 login()에서 Authentication 을 생성할 때 authenticate() 메소드 내부에서 loadUserByUserName이 호출
     @Override
     public UserDetails loadUserByUsername(String userid) throws UsernameNotFoundException {
-        Member member = memberRepository.findByMemberId(userid).orElseThrow(()
+        Member member = memberRepository.findByUserId(userid).orElseThrow(()
                 -> new RuntimeException("사용자 찾을 수 없음"));
 
         return createUserDetails(member);
@@ -43,7 +42,7 @@ public class CustomUserDetailService implements UserDetailsService {
             authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
         }
 
-        return new User(member.getMemberId(), member.getPassword(), authorities);
+        return new User(member.getUserId(), member.getPassword(), authorities);
     }
 
 }
