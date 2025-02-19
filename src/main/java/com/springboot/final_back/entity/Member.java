@@ -2,7 +2,6 @@ package com.springboot.final_back.entity;
 
 import com.springboot.final_back.constant.UserRole;
 import lombok.*;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -20,7 +19,7 @@ public class Member {
     private Long id;
 
     @Column(unique = true, nullable = false)
-    private String memberId;
+    private String userId;
 
     @Column(nullable = false)
     private String password;
@@ -54,8 +53,8 @@ public class Member {
     }
 
     @Builder
-    private Member(String memberId, String password, String email, String name, String nickname, String imgPath) {
-        this.memberId = memberId;
+    private Member(String userId, String password, String email, String name, String nickname, String imgPath) {
+        this.userId = userId;
         this.password = password;
         this.email = email;
         this.name = name;
@@ -64,8 +63,8 @@ public class Member {
     }
 
     @Builder
-    private Member(String memberId, String password, String email, String name, String nickname, String imgPath, String sso, String ssoId){
-        this.memberId = memberId;
+    private Member(String userId, String password, String email, String name, String nickname, String imgPath, String sso, String ssoId){
+        this.userId = userId;
         this.password = password;
         this.email = email;
         this.name = name;

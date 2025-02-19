@@ -9,12 +9,12 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class loginDto {
-    private String memberId;
+public class LoginDto {
+    private String userId;
     private String password;
 
 
     public UsernamePasswordAuthenticationToken toAuthentication() {
-        return new UsernamePasswordAuthenticationToken(memberId, password);
+        return new UsernamePasswordAuthenticationToken(userId, password);
     }
 }
