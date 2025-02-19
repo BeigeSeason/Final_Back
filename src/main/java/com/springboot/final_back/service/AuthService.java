@@ -1,6 +1,7 @@
 package com.springboot.final_back.service;
 
 import com.springboot.final_back.dto.LoginDto;
+import com.springboot.final_back.dto.MemberResDto;
 import com.springboot.final_back.dto.TokenDto;
 import com.springboot.final_back.entity.Member;
 import com.springboot.final_back.entity.RefreshToken;
@@ -27,6 +28,9 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final TokenProvider tokenProvider;
 
+    public MemberResDto signUp(MemberResDto memberResDto){
+        return null;
+    }
 
     public TokenDto login(LoginDto memberReqDto) {
         try{

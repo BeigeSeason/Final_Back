@@ -31,7 +31,6 @@ public class WebSecurityConfig implements WebMvcConfigurer {
     @Bean // SecurityFilterChain 객체를 Bean으로 등록
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-
                 .httpBasic()
                 .and()
                 .csrf().disable()
