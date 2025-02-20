@@ -2,20 +2,24 @@ package com.springboot.final_back.service;
 
 import com.springboot.final_back.dto.LoginDto;
 import com.springboot.final_back.dto.MemberResDto;
+import com.springboot.final_back.dto.SignupDto;
 import com.springboot.final_back.dto.TokenDto;
 import com.springboot.final_back.entity.Member;
 import com.springboot.final_back.entity.RefreshToken;
+import com.springboot.final_back.exception.NotMemberException;
 import com.springboot.final_back.jwt.TokenProvider;
 import com.springboot.final_back.repository.MemberRepository;
 import com.springboot.final_back.repository.RefreshTokenRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 @Service
 @Slf4j
@@ -28,14 +32,24 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final TokenProvider tokenProvider;
 
-    public MemberResDto signUp(MemberResDto memberResDto){
-        return null;
+    public boolean signUp(SignupDto signupDto) {
+        try{
+            if(memberRepository.existsMemberByUserId(signupDto.getUserId())){
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+            }else {
+                memberRepository.save(signupDto.toEntity(passwordEncoder));
+                return true;
+            }
+        }catch (ResponseStatusException e){
+            log.error("회원 가입 실패 : {}",e.getMessage());
+            return false;
+        }
     }
 
     public TokenDto login(LoginDto memberReqDto) {
         try{
             Member member = memberRepository.findByUserId(memberReqDto.getUserId())
-                    .orElseThrow(()-> new RuntimeException("no"));
+                    .orElseThrow(()-> new NotMemberException(HttpStatus.UNAUTHORIZED, "회원가입이 필요합니다."));
 
             UsernamePasswordAuthenticationToken authenticationToken = memberReqDto.toAuthentication();
 

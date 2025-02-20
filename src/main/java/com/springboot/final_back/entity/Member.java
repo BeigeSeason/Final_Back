@@ -62,7 +62,8 @@ public class Member {
         this.imgPath = imgPath;
     }
 
-    @Builder
+    // 생성자 오버로딩이 가능하지만 명시적으로 구분
+    @Builder(builderMethodName = "ssoBuilder")
     private Member(String userId, String password, String email, String name, String nickname, String imgPath, String sso, String ssoId){
         this.userId = userId;
         this.password = password;
