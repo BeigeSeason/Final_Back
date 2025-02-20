@@ -1,6 +1,6 @@
 package com.springboot.final_back.entity;
 
-import com.springboot.final_back.constant.UserRole;
+import com.springboot.final_back.constant.MemberRole;
 import lombok.*;
 
 import javax.persistence.*;
@@ -40,7 +40,7 @@ public class Member {
 
     private LocalDateTime regDate;
 
-    private UserRole role;
+    private MemberRole role;
 
     private boolean banned;
 
@@ -48,7 +48,7 @@ public class Member {
     protected void onCreate() {
         regDate = LocalDateTime.now();
         banned = false;
-        role = UserRole.USER;
+        role = MemberRole.USER;
     }
 
     @Builder
