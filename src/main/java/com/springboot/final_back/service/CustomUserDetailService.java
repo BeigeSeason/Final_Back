@@ -1,6 +1,6 @@
 package com.springboot.final_back.service;
 
-import com.springboot.final_back.constant.UserRole;
+import com.springboot.final_back.constant.MemberRole;
 import com.springboot.final_back.entity.Member;
 import com.springboot.final_back.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
@@ -38,7 +38,7 @@ public class CustomUserDetailService implements UserDetailsService {
         authorities.add(new SimpleGrantedAuthority("ROLE_USER")); // 기본적으로 ROLE_USER 권한 부여
 
         // 멤버의 Role이 어드민인 경우 ROLE_ADMIN 권한 추가
-        if (member.getRole() == UserRole.ADMIN) { // member.getRole() 이 어드민 Role Enum 값과 일치하는지 확인
+        if (member.getRole() == MemberRole.ADMIN) { // member.getRole() 이 어드민 Role Enum 값과 일치하는지 확인
             authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
         }
 
