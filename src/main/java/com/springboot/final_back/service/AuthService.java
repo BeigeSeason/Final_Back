@@ -42,7 +42,7 @@ public class AuthService {
             }
         }catch (ResponseStatusException e){
             log.error("회원 가입 실패 : {}",e.getMessage());
-            return false;
+            throw e;
         }
     }
 
