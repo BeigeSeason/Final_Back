@@ -23,7 +23,7 @@ public class MemberService {
 
     // 회원 전체 조회
     public Page<MemberResDto> getMemberAllList(int page, int size, Member.SearchType searchType, String searchValue) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());  // createdAt 기준 내림차순 정렬
+        Pageable pageable = PageRequest.of(page, size, Sort.by("regDate").descending());  // regDate 기준 내림차순 정렬
 
         Page<Member> memberPage;
 

@@ -7,10 +7,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @Slf4j
 @RestController
@@ -21,12 +18,17 @@ public class MemberController {
 
     @GetMapping("/list")
     public ResponseEntity<Page<MemberResDto>> getAllMembers(
-            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(required = false) Member.SearchType searchType,
             @RequestParam(required = false) String searchValue
             ) {
-        Page<MemberResDto> members = memberService.getMemberAllList(page - 1, size, searchType, searchValue);
+
+        if (page < 0) {
+            page = 0;
+        }
+
+        Page<MemberResDto> members = memberService.getMemberAllList(page, size, searchType, searchValue);
         return ResponseEntity.ok(members);
     }
 }
