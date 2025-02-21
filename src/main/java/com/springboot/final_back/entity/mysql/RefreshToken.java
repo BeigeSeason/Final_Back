@@ -1,8 +1,6 @@
-package com.springboot.final_back.entity;
+package com.springboot.final_back.entity.mysql;
 
-import com.springboot.final_back.constant.Type;
 import lombok.*;
-import org.springframework.security.core.parameters.P;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -19,12 +17,11 @@ public class RefreshToken {
     private Long id;
 
     @Lob
-    @Column(unique = true, nullable = false)
     private String refreshToken;
 
-    private Long expiresIn;
-
     private LocalDateTime createdAt;
+
+    private LocalDateTime updatedAt;
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member")
@@ -36,15 +33,14 @@ public class RefreshToken {
     }
 
     @Builder
-    public RefreshToken(Long id, String refreshToken, Long expiresIn, Member member) {
+    public RefreshToken(Long id, String refreshToken, Member member) {
         this.id = id;
         this.refreshToken = refreshToken;
-        this.expiresIn = expiresIn;
         this.member = member;
     }
 
-    public void update(String refreshToken, Long expiresIn) {
+    public void update(String refreshToken) {
         this.refreshToken = refreshToken;
-        this.expiresIn = expiresIn;
+        this.updatedAt = LocalDateTime.now();
     }
 }

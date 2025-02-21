@@ -1,6 +1,6 @@
 package com.springboot.final_back.dto;
 
-import com.springboot.final_back.entity.Member;
+import com.springboot.final_back.entity.mysql.Member;
 import lombok.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
 

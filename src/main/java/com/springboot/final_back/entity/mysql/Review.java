@@ -1,4 +1,4 @@
-package com.springboot.final_back.entity;
+package com.springboot.final_back.entity.mysql;
 
 import lombok.*;
 

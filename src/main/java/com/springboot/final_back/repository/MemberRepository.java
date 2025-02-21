@@ -1,6 +1,6 @@
 package com.springboot.final_back.repository;
 
-import com.springboot.final_back.entity.Member;
+import com.springboot.final_back.entity.mysql.Member;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

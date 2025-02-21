@@ -1,4 +1,4 @@
-package com.springboot.final_back.entity;
+package com.springboot.final_back.entity.mysql;
 
 
 import com.springboot.final_back.constant.State;
@@ -28,10 +28,6 @@ public class Report {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "reported")
     private Member reported;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "diary_id", nullable = true)
-    private Diary diaryId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "review_id", nullable = true)
