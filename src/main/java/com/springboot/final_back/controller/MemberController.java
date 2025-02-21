@@ -1,7 +1,7 @@
 package com.springboot.final_back.controller;
 
 import com.springboot.final_back.dto.MemberResDto;
-import com.springboot.final_back.entity.Member;
+import com.springboot.final_back.entity.mysql.Member;
 import com.springboot.final_back.service.MemberService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
