@@ -10,6 +10,7 @@ import org.springframework.data.elasticsearch.annotations.MultiField;
 
 
 import javax.persistence.Id;
+import java.time.LocalDateTime;
 
 @Data
 @Document(indexName = "tour_spots")
@@ -43,16 +44,16 @@ public class TourSpots {
     private String title;
 
     @Field(type = FieldType.Keyword)
-    private String areacode;
+    private String areaCode;
 
     @Field(type = FieldType.Keyword)
-    private String sigungucode;
+    private String sigunguCode;
 
     @Field(type = FieldType.Keyword)
     private String zipcode;
 
     @Field(type = FieldType.Keyword)
-    private String contenttypeid;
+    private String contentTypeId;
 
     @Field(type = FieldType.Keyword)
     private String cat1;
@@ -64,19 +65,19 @@ public class TourSpots {
     private String cat3;
 
     @Field(type = FieldType.Date, format = DateFormat.custom, pattern = "yyyyMMddHHmmss")
-    private String createdtime;
+    private LocalDateTime createdTime;
 
     @Field(type = FieldType.Date, format = DateFormat.basic_date, pattern = "yyyyMMddHHmmss")
-    private String modifiedtime;
+    private LocalDateTime modifiedTime;
 
     @Field(type = FieldType.Keyword)
-    private String firstimage;
+    private String firstImage;
 
     @Field(type = FieldType.Keyword)
-    private String firstimage2;
+    private String firstImage2;
 
     @Field(type = FieldType.Keyword)
-    private String booktour;
+    private String bookTour;
 
     @Field(type = FieldType.Keyword)
     private String cpyrhtDivCd;
@@ -85,11 +86,11 @@ public class TourSpots {
     private String tel;
 
     @Field(type = FieldType.Float)
-    private Float mapx;
+    private Float mapX;
 
     @Field(type = FieldType.Float)
-    private Float mapy;
+    private Float mapY;
 
     @Field(type = FieldType.Float)
-    private Float mlevel;
+    private Float mLevel;
 }
