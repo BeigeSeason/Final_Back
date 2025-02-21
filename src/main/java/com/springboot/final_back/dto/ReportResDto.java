@@ -1,10 +1,9 @@
 package com.springboot.final_back.dto;
 
 import com.springboot.final_back.constant.State;
-import com.springboot.final_back.entity.Diary;
-import com.springboot.final_back.entity.Member;
-import com.springboot.final_back.entity.Report;
-import com.springboot.final_back.entity.Review;
+import com.springboot.final_back.entity.mysql.Member;
+import com.springboot.final_back.entity.mysql.Report;
+import com.springboot.final_back.entity.mysql.Review;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -20,7 +19,7 @@ public class ReportResDto {
     private String reportType;
     private Member reporter;
     private Member reported;
-    private Diary diaryId;
+//    private Diary diaryId;
     private Review reviewId;
     private String content;
     private LocalDateTime createdAt;
@@ -33,7 +32,6 @@ public class ReportResDto {
                 .reportType(String.valueOf(report.getReportType()))
                 .reporter(report.getReporter())
                 .reported(report.getReported())
-                .diaryId(report.getDiaryId())
                 .reviewId(report.getReviewId())
                 .content(report.getContent())
                 .createdAt(report.getCreatedAt())
