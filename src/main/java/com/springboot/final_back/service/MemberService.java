@@ -21,38 +21,10 @@ import java.util.List;
 public class MemberService {
     private final MemberRepository memberRepository;
 
-    // 회원 전체 조회
-    public Page<MemberResDto> getMemberAllList(int page, int size, Member.SearchType searchType, String searchValue) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by("regDate").descending());  // regDate 기준 내림차순 정렬
-
-        Page<Member> memberPage;
-
-        if (searchType != null && searchValue != null && !searchValue.isEmpty()) {
-            switch (searchType) {
-                case NAME:
-                    memberPage = memberRepository.findByNameContaining(searchValue, pageable);
-                    break;
-                case NICKNAME:
-                    memberPage = memberRepository.findByNicknameContaining(searchValue, pageable);
-                    break;
-                case EMAIL:
-                    memberPage = memberRepository.findByEmailContaining(searchValue, pageable);
-                    break;
-                default:
-                    memberPage = memberRepository.findAll(pageable);  // 기본값
-                    break;
-            }
-        } else {
-            memberPage = memberRepository.findAll(pageable);  // 검색 조건이 없으면 모든 멤버 조회
-        }
-
-        return memberPage.map(this::convertEntityToDto);
-    }
-
     // 회원 상세 조회
     public MemberResDto getMemberDetail(String userId) {
         Member member = memberRepository.findByUserId(userId).orElseThrow(() -> new RuntimeException("해당 회원이 존재하지 않습니다."));
-        return convertEntityToDto(member);
+        return member.convertEntityToDto();
     }
 
     // 회원 수정
@@ -72,15 +44,4 @@ public class MemberService {
         }
     }
 
-    // Member Entity => MemberResDto 변환
-    private MemberResDto convertEntityToDto(Member member) {
-        MemberResDto memberResDto = new MemberResDto();
-        memberResDto.setId(member.getId());
-        memberResDto.setUserId(member.getUserId());
-        memberResDto.setEmail(member.getEmail());
-        memberResDto.setName(member.getName());
-        memberResDto.setNickname(member.getNickname());
-        memberResDto.setImgPath(member.getImgPath());
-        return memberResDto;
-    }
 }

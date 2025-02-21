@@ -1,6 +1,7 @@
 package com.springboot.final_back.entity.mysql;
 
 import com.springboot.final_back.constant.MemberRole;
+import com.springboot.final_back.dto.MemberResDto;
 import lombok.*;
 
 import javax.persistence.*;
@@ -44,10 +45,6 @@ public class Member {
 
     private boolean banned;
 
-    public enum SearchType {
-        NAME, NICKNAME, EMAIL
-    }
-
     @PrePersist
     protected void onCreate() {
         regDate = LocalDateTime.now();
@@ -77,5 +74,18 @@ public class Member {
         this.sso = sso;
         this.ssoId = ssoId;
     }
+
+    public MemberResDto convertEntityToDto() {
+        MemberResDto memberResDto = new MemberResDto();
+        memberResDto.setId(this.getId());
+        memberResDto.setUserId(this.getUserId());
+        memberResDto.setEmail(this.getEmail());
+        memberResDto.setName(this.getName());
+        memberResDto.setNickname(this.getNickname());
+        memberResDto.setImgPath(this.getImgPath());
+        memberResDto.setRegDate(this.getRegDate());
+        return memberResDto;
+    }
+
 
 }
