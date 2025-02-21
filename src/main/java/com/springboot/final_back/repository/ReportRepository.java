@@ -12,5 +12,6 @@ import java.util.Optional;
 public interface ReportRepository extends JpaRepository<Report, Long> {
     Optional<Report> findById(Long id);
 
-    Page<Report> findAllByType(Pageable pageable, Report.ReportType reportType);
+    Page<Report> findAllByReportType(Pageable pageable, Report.ReportType reportType);
+
 }

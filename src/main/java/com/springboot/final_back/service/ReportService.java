@@ -51,7 +51,7 @@ public class ReportService {
             Page<Report> page;
 
             if (!reportType.isEmpty()) {
-                page = reportRepository.findAllByType(pageable, Report.ReportType.valueOf(reportType.toUpperCase()));
+                page = reportRepository.findAllByReportType(pageable, Report.ReportType.valueOf(reportType.toUpperCase()));
             } else {
                 page = reportRepository.findAll(pageable);
             }
