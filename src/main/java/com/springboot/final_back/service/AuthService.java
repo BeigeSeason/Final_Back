@@ -13,6 +13,7 @@ import com.springboot.final_back.repository.RefreshTokenRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
@@ -26,7 +27,7 @@ import org.springframework.web.server.ResponseStatusException;
 @RequiredArgsConstructor
 @Transactional
 public class AuthService {
-    private final AuthenticationManagerBuilder managerBuilder; // 인증을 담당하는 클래스
+    private final AuthenticationManager authenticationManager; // 인증을 담당하는 클래스
     private final MemberRepository memberRepository;
     private final RefreshTokenRepository refreshTokenRepository;
     private final PasswordEncoder passwordEncoder;
@@ -52,17 +53,12 @@ public class AuthService {
                     .orElseThrow(()-> new NotMemberException(HttpStatus.UNAUTHORIZED, "회원가입이 필요합니다."));
 
             UsernamePasswordAuthenticationToken authenticationToken = memberReqDto.toAuthentication();
-
             // authenticate() 내부에서 loadUserByUsername()가 실행되어 가입한 회원인지 확인하는 로직 존재함
-            Authentication authentication = managerBuilder.build().authenticate(authenticationToken);
-
+            Authentication authentication = authenticationManager.authenticate(authenticationToken);
             TokenDto tokenDto = tokenProvider.generateTokenDto(authentication);
-
             String newRefreshToken = tokenDto.getRefreshToken();
-
             RefreshToken refreshToken = refreshTokenRepository.findByMember_UserId(memberReqDto.getUserId())
                     .orElse(null);
-
             if(refreshToken == null){
                 RefreshToken newToken = RefreshToken.builder()
                         .refreshToken(newRefreshToken)

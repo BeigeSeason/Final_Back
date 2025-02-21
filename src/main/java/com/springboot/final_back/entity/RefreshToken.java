@@ -19,7 +19,6 @@ public class RefreshToken {
     private Long id;
 
     @Lob
-    @Column(unique = true, nullable = false)
     private String refreshToken;
 
     private Long expiresIn;

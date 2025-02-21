@@ -32,8 +32,9 @@ public class TokenProvider {
     // springframework.beans.factory.annotation.Value
     // @Value : 설정 파일에서 JWT를 만들 때 사용할 암호화 키를 가져오기 위한 어노테이션
     public TokenProvider(@Value("${jwt.secret}") String secretKey) {
-        this.key = Keys.hmacShaKeyFor(secretKey.getBytes()); // HS256 알고리즘으로 새로운 키를 생성
+        this.key = Keys.hmacShaKeyFor(secretKey.getBytes());
     }
+
 
     // 인증에 성공한 사용자의 인증 정보를 캡슐화한 객체를 매개 변수로 받아,
     public TokenDto generateTokenDto(Authentication authentication) {
@@ -41,6 +42,7 @@ public class TokenProvider {
         String authorities = authentication.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.joining(","));
+
 
         // 토큰 만료 시간 설정
         long now = (new Date()).getTime();
