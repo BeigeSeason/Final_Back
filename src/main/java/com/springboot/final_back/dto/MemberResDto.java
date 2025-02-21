@@ -2,6 +2,8 @@ package com.springboot.final_back.dto;
 
 import lombok.*;
 
+import java.time.LocalDateTime;
+
 @Getter
 @Setter
 @ToString
@@ -15,6 +17,7 @@ public class MemberResDto {
     private String name;
     private String nickname;
     private String imgPath;
+    private LocalDateTime regDate;
     private boolean banned;
 
 }

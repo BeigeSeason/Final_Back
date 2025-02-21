@@ -31,11 +31,11 @@ public class Report {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "diary_id", nullable = true)
-    private Long diaryId;
+    private Diary diaryId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "review_id", nullable = true)
-    private Long reviewId;
+    private Review reviewId;
 
     @Lob
     private String content;
