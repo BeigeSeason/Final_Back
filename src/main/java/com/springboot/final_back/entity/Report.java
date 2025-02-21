@@ -18,6 +18,9 @@ public class Report {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Enumerated(EnumType.STRING)
+    private ReportType reportType;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "reporter")
     private Member reporter;
@@ -25,6 +28,14 @@ public class Report {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "reported")
     private Member reported;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "diary_id", nullable = true)
+    private Long diaryId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "review_id", nullable = true)
+    private Long reviewId;
 
     @Lob
     private String content;
@@ -34,6 +45,10 @@ public class Report {
     private LocalDateTime checkedAt;
 
     private State state;
+
+    public enum ReportType {
+        USER, DIARY, REVIEW
+    }
 
     @PrePersist
     public void onCreate() {

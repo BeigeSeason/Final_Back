@@ -44,6 +44,10 @@ public class Member {
 
     private boolean banned;
 
+    public enum SearchType {
+        NAME, NICKNAME, EMAIL
+    }
+
     @PrePersist
     protected void onCreate() {
         regDate = LocalDateTime.now();

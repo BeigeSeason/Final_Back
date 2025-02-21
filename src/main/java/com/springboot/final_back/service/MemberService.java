@@ -6,6 +6,10 @@ import com.springboot.final_back.entity.Member;
 import com.springboot.final_back.repository.MemberRepository;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -18,13 +22,31 @@ public class MemberService {
     private final MemberRepository memberRepository;
 
     // 회원 전체 조회
-    public List<MemberResDto> getMemberAllList() {
-        List<Member> members = memberRepository.findAll();
-        List<MemberResDto> memberResDtoList = new ArrayList<>();
-        for (Member member : members) {
-            memberResDtoList.add(convertEntityToDto(member));
+    public Page<MemberResDto> getMemberAllList(int page, int size, Member.SearchType searchType, String searchValue) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());  // createdAt 기준 내림차순 정렬
+
+        Page<Member> memberPage;
+
+        if (searchType != null && searchValue != null && !searchValue.isEmpty()) {
+            switch (searchType) {
+                case NAME:
+                    memberPage = memberRepository.findByNameContaining(searchValue, pageable);
+                    break;
+                case NICKNAME:
+                    memberPage = memberRepository.findByNicknameContaining(searchValue, pageable);
+                    break;
+                case EMAIL:
+                    memberPage = memberRepository.findByEmailContaining(searchValue, pageable);
+                    break;
+                default:
+                    memberPage = memberRepository.findAll(pageable);  // 기본값
+                    break;
+            }
+        } else {
+            memberPage = memberRepository.findAll(pageable);  // 검색 조건이 없으면 모든 멤버 조회
         }
-        return memberResDtoList;
+
+        return memberPage.map(this::convertEntityToDto);
     }
 
     // 회원 상세 조회
