@@ -2,6 +2,7 @@ package com.springboot.final_back.entity.mysql;
 
 
 import com.springboot.final_back.constant.State;
+import com.springboot.final_back.constant.Type;
 import lombok.*;
 
 import javax.persistence.*;
@@ -18,8 +19,9 @@ public class Report {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    // 신고 타입(멤버, 다이어리, 댓글(리뷰)
     @Enumerated(EnumType.STRING)
-    private ReportType reportType;
+    private Type reportType;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "reporter")
@@ -29,22 +31,16 @@ public class Report {
     @JoinColumn(name = "reported")
     private Member reported;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "review_id", nullable = true)
-    private Review reviewId;
+    private String reportEntity;
 
     @Lob
-    private String content;
+    private String reason;
 
     private LocalDateTime createdAt;
 
     private LocalDateTime checkedAt;
 
     private State state;
-
-    public enum ReportType {
-        USER, DIARY, REVIEW
-    }
 
     @PrePersist
     public void onCreate() {
@@ -53,11 +49,11 @@ public class Report {
     }
 
     @Builder
-    public Report(Long id, Member reporter, Member reported, String content) {
+    public Report(Long id, Member reporter, Member reported, String reason) {
         this.id = id;
         this.reporter = reporter;
         this.reported = reported;
-        this.content = content;
+        this.reason = reason;
         this.state = State.WAIT;
     }
 }
