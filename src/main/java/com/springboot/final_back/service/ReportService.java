@@ -1,16 +1,8 @@
 package com.springboot.final_back.service;
 
-import com.springboot.final_back.dto.ReportReqDto;
-import com.springboot.final_back.dto.ReportResDto;
-import com.springboot.final_back.entity.mysql.Member;
-import com.springboot.final_back.entity.mysql.Report;
-import com.springboot.final_back.repository.MemberRepository;
-import com.springboot.final_back.repository.ReportRepository;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 @Slf4j
