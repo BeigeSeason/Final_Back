@@ -1,6 +1,7 @@
 package com.springboot.final_back.entity.elasticsearch;
 
 import lombok.Data;
+import org.springframework.data.annotation.Id;
 import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.elasticsearch.annotations.FieldType;
@@ -9,7 +10,7 @@ import org.springframework.data.elasticsearch.annotations.InnerField;
 import org.springframework.data.elasticsearch.annotations.MultiField;
 
 
-import javax.persistence.Id;
+
 import java.time.LocalDateTime;
 
 @Data
@@ -64,10 +65,10 @@ public class TourSpots {
     @Field(type = FieldType.Keyword)
     private String cat3;
 
-    @Field(type = FieldType.Date, format = DateFormat.custom, pattern = "yyyyMMddHHmmss")
+    @Field(type = FieldType.Date, format = DateFormat.basic_date_time_no_millis)
     private LocalDateTime createdTime;
 
-    @Field(type = FieldType.Date, format = DateFormat.basic_date, pattern = "yyyyMMddHHmmss")
+    @Field(type = FieldType.Date, format = DateFormat.basic_date_time_no_millis)
     private LocalDateTime modifiedTime;
 
     @Field(type = FieldType.Keyword)
