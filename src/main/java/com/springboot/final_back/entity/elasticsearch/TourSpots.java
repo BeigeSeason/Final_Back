@@ -16,10 +16,13 @@ import java.time.LocalDateTime;
 @Data
 @Document(indexName = "tour_spots")
 public class TourSpots {
+    // 관광지 아이디
     @Id
     @Field(name ="contentid" , type = FieldType.Keyword)
     private String contentId;
 
+    // 주소
+    // N-gram 분석은 텍스트를 N-gram (N글자씩 묶음) 단위로 분리하여 인덱싱하는 방식
     @MultiField(
             mainField = @Field(type = FieldType.Text, analyzer = "nori_analyzer_with_stopwords"),
             otherFields = {
@@ -28,6 +31,7 @@ public class TourSpots {
     )
     private String addr1;
 
+    // 상세주소
     @MultiField(
             mainField = @Field(type = FieldType.Text, analyzer = "nori_analyzer_with_stopwords"),
             otherFields = {
@@ -36,6 +40,7 @@ public class TourSpots {
     )
     private String addr2;
 
+    // 제목
     @MultiField(
             mainField = @Field(type = FieldType.Text, analyzer = "nori_analyzer_with_stopwords"),
             otherFields = {
@@ -44,54 +49,72 @@ public class TourSpots {
     )
     private String title;
 
+    // 지역코드(시도)
     @Field(type = FieldType.Keyword)
     private String areaCode;
 
+    // 지역코드(시군구)
     @Field(type = FieldType.Keyword)
     private String sigunguCode;
 
+    // 우편번호(시간남으면 제거)
     @Field(type = FieldType.Keyword)
     private String zipcode;
 
+    // 타입 아이디
     @Field(type = FieldType.Keyword)
     private String contentTypeId;
 
+    // 대분류
     @Field(type = FieldType.Keyword)
     private String cat1;
 
+    // 중분류
     @Field(type = FieldType.Keyword)
     private String cat2;
 
+    // 소분류
     @Field(type = FieldType.Keyword)
     private String cat3;
 
+    // 등록일
     @Field(type = FieldType.Date, format = DateFormat.basic_date_time_no_millis)
     private LocalDateTime createdTime;
 
+    // 수정일
     @Field(type = FieldType.Date, format = DateFormat.basic_date_time_no_millis)
     private LocalDateTime modifiedTime;
 
+    // 이미지 1
     @Field(type = FieldType.Keyword)
     private String firstImage;
 
+    // 이미지 2
     @Field(type = FieldType.Keyword)
     private String firstImage2;
 
+    // 등장 교과서 (시간 남으면 제거)
     @Field(type = FieldType.Keyword)
     private String bookTour;
 
+    // 저작권 관련... 인거같은데 (시간 남으면 제거)
     @Field(type = FieldType.Keyword)
     private String cpyrhtDivCd;
 
+
+    // 전화번호
     @Field(type = FieldType.Keyword)
     private String tel;
 
+    // 경도
     @Field(type = FieldType.Float)
     private Float mapX;
 
+    // 위도
     @Field(type = FieldType.Float)
     private Float mapY;
 
+    // 지도 레벨 (시간 남으면 제거)
     @Field(type = FieldType.Float)
     private Float mLevel;
 }
