@@ -14,14 +14,5 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 @CrossOrigin(origins = "http://localhost:3000")
 public class ReportController {
-    private final ReportService reportService;
 
-    // 신고 조회
-    @GetMapping("/list")
-    public ResponseEntity<Page<ReportResDto>> getReports(@RequestParam(defaultValue = "1") int page,
-                                                         @RequestParam(defaultValue = "10") int size,
-                                                         @RequestParam(required = false) String reportType) {
-        Page<ReportResDto> reports = reportService.getReports(page - 1, size, reportType);
-        return ResponseEntity.ok(reports);
-    }
 }
