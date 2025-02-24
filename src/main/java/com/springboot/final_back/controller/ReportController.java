@@ -17,7 +17,7 @@ public class ReportController {
     private final ReportService reportService;
 
     // 신고 조회
-    @GetMapping
+    @GetMapping("/list")
     public ResponseEntity<Page<ReportResDto>> getReports(@RequestParam(defaultValue = "1") int page,
                                                          @RequestParam(defaultValue = "10") int size,
                                                          @RequestParam(required = false) String reportType) {
