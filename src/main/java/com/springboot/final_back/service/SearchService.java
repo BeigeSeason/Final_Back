@@ -1,6 +1,7 @@
 package com.springboot.final_back.service;
 
 
+import com.springboot.final_back.dto.TourSpotListDto;
 import com.springboot.final_back.entity.elasticsearch.Diary;
 import com.springboot.final_back.entity.elasticsearch.TourSpots;
 import com.springboot.final_back.repository.DiaryRepository;
@@ -24,8 +25,16 @@ public class SearchService {
         return diaryRepository.findByTitle(title, pageable);
     }
 
-    public Page<TourSpots> searchTourSpots(String keyword, int page, int size) {
+    public Page<TourSpotListDto> searchTourSpots(int page, int size, String keyword) {
         Pageable pageable = PageRequest.of(page, size);
-        return tourSpotsRepository.findByTitleOrAddr1(keyword, keyword, pageable);
+        Page<TourSpots> pages = tourSpotsRepository.findByTitleOrAddr1(keyword, keyword, pageable);
+        log.info(pages.toString());
+        for(TourSpots tourSpots : pages) {
+            log.warn(tourSpots.getFirstImage());
+            log.warn(tourSpots.getFirstImage2());
+        }
+
+        return pages.map(TourSpots::convertToListDto);
     }
+
 }
