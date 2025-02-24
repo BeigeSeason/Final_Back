@@ -23,11 +23,11 @@ public class Report {
     @Enumerated(EnumType.STRING)
     private Type reportType;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "reporter")
     private Member reporter;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "reported")
     private Member reported;
 
@@ -40,6 +40,7 @@ public class Report {
 
     private LocalDateTime checkedAt;
 
+    @Enumerated(EnumType.STRING)
     private State state;
 
     @PrePersist
