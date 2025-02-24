@@ -20,6 +20,7 @@ public class AdminController {
     private final AdminService adminService;
     private final ReportService reportService;
 
+    // 멤버 조회
     @GetMapping("/member-list")
     public ResponseEntity<Page<MemberResDto>> getAllMembers(@RequestParam(defaultValue = "0") int page,
                                                             @RequestParam(defaultValue = "10") int size,
@@ -31,10 +32,10 @@ public class AdminController {
 
     // 신고 조회
     @GetMapping("/report-list")
-    public ResponseEntity<Page<ReportResDto>> getReports(@RequestParam(defaultValue = "1") int page,
+    public ResponseEntity<Page<ReportResDto>> getReports(@RequestParam(defaultValue = "0") int page,
                                                          @RequestParam(defaultValue = "10") int size,
                                                          @RequestParam(required = false) String reportType) {
-        Page<ReportResDto> reports = reportService.getReports(page - 1, size, reportType);
+        Page<ReportResDto> reports = reportService.getReports(page, size, reportType);
         return ResponseEntity.ok(reports);
     }
 }

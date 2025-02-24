@@ -31,7 +31,7 @@ public class ReportService {
             Member reported = memberRepository.findByUserId(String.valueOf(reportReqDto.getReported()))
                     .orElseThrow(() -> new RuntimeException("해당 회원을 찾을 수 없습니다."));
 
-            Report report = reportReqDto.toEntity(reportReqDto.getContent(), reporter, reported);
+            Report report = reportReqDto.toEntity(reportReqDto.getReason(), reporter, reported);
 
             reportRepository.save(report);
 

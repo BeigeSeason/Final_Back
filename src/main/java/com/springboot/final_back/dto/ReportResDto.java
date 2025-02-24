@@ -20,7 +20,7 @@ public class ReportResDto {
     private Member reported;
 //    private Diary diaryId;
 //    private Review reviewId;
-    private String content;
+    private String reason;
     private LocalDateTime createdAt;
     private LocalDateTime checkedAt;
     private State state;
@@ -31,7 +31,7 @@ public class ReportResDto {
                 .reportType(String.valueOf(report.getReportType()))
                 .reporter(report.getReporter())
                 .reported(report.getReported())
-                .content(report.getReason())
+                .reason(report.getReason())
                 .createdAt(report.getCreatedAt())
                 .checkedAt(report.getCheckedAt())
                 .state(report.getState())

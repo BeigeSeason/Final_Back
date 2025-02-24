@@ -41,6 +41,7 @@ public class Member {
 
     private LocalDateTime regDate;
 
+    @Enumerated(EnumType.STRING)
     private MemberRole role;
 
     private boolean banned;
