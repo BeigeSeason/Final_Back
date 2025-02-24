@@ -2,6 +2,7 @@ package com.springboot.final_back.service;
 
 
 import com.springboot.final_back.entity.elasticsearch.Diary;
+import com.springboot.final_back.entity.elasticsearch.TourSpots;
 import com.springboot.final_back.repository.DiaryRepository;
 import com.springboot.final_back.repository.TourSpotsRepository;
 import lombok.AllArgsConstructor;
@@ -21,5 +22,10 @@ public class SearchService {
     public Page<Diary> searchByTitle(String title, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
         return diaryRepository.findByTitle(title, pageable);
+    }
+
+    public Page<TourSpots> searchTourSpots(String keyword, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return tourSpotsRepository.findByTitleOrAddr1(keyword, keyword, pageable);
     }
 }

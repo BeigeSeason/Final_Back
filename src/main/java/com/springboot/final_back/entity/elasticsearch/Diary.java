@@ -2,9 +2,10 @@ package com.springboot.final_back.entity.elasticsearch;
 
 import lombok.Builder;
 import lombok.Data;
+import org.springframework.data.annotation.Id;
 import org.springframework.data.elasticsearch.annotations.*;
 
-import javax.persistence.Id;
+
 import javax.persistence.PrePersist;
 import java.time.LocalDateTime;
 import java.util.Set;
