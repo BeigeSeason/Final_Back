@@ -18,17 +18,10 @@ public class AdminController {
     private final AdminService adminService;
 
     @GetMapping("/list")
-    public ResponseEntity<Page<MemberResDto>> getAllMembers(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(required = false) String searchType,
-            @RequestParam(required = false) String searchValue
-    ) {
-
-        if (page < 0) {
-            page = 0;
-        }
-
+    public ResponseEntity<Page<MemberResDto>> getAllMembers(@RequestParam(defaultValue = "0") int page,
+                                                            @RequestParam(defaultValue = "10") int size,
+                                                            @RequestParam(required = false) String searchType,
+                                                            @RequestParam(required = false) String searchValue) {
         Page<MemberResDto> members = adminService.getMemberAllList(page, size, searchType, searchValue);
         return ResponseEntity.ok(members);
     }
