@@ -1,5 +1,6 @@
 package com.springboot.final_back.entity.elasticsearch;
 
+import com.springboot.final_back.dto.TourSpotListDto;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.elasticsearch.annotations.Document;
@@ -117,4 +118,13 @@ public class TourSpots {
     // 지도 레벨 (시간 남으면 제거)
     @Field(type = FieldType.Float)
     private Float mLevel;
+
+    public TourSpotListDto convertToListDto(){
+        return TourSpotListDto.builder()
+                .spotId(contentId)
+                .title(title)
+                .addr(addr1)
+                .thumbnail(firstImage)
+                .build();
+    }
 }
