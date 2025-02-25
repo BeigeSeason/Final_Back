@@ -85,6 +85,7 @@ public class Member {
         memberResDto.setNickname(this.getNickname());
         memberResDto.setImgPath(this.getImgPath());
         memberResDto.setRegDate(this.getRegDate());
+        memberResDto.setBanned(this.isBanned());
         return memberResDto;
     }
 
