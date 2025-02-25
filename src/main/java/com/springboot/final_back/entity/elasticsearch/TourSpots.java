@@ -1,6 +1,6 @@
 package com.springboot.final_back.entity.elasticsearch;
 
-import com.springboot.final_back.dto.TourSpotListDto;
+import com.springboot.final_back.dto.search.TourSpotListDto;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.elasticsearch.annotations.Document;

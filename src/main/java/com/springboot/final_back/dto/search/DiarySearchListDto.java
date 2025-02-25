@@ -1,4 +1,4 @@
-package com.springboot.final_back.dto;
+package com.springboot.final_back.dto.search;
 
 import lombok.*;
 
@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class DiaryListDto {
+public class DiarySearchListDto {
     private String title; // 제목
     private String contentSummary; // 내용 요약
     private String thumbnail; // 썸네일

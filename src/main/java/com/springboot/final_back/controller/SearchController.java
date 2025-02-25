@@ -1,10 +1,9 @@
 package com.springboot.final_back.controller;
 
-import com.springboot.final_back.dto.TourSpotListDto;
+import com.springboot.final_back.dto.search.TourSpotListDto;
 import com.springboot.final_back.service.SearchService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,7 +20,7 @@ public class SearchController {
     @GetMapping("/tour-list")
     public ResponseEntity<Page<TourSpotListDto>> findTourSpotList(@RequestParam(defaultValue = "0") int page,
                                                                   @RequestParam(defaultValue = "20") int size,
-                                                                  @RequestParam String keyword) {
+                                                                  @RequestParam(required = false) String keyword) {
         log.info(keyword);
         return new ResponseEntity<>(searchService.searchTourSpots(page, size, keyword), HttpStatus.OK);
     }

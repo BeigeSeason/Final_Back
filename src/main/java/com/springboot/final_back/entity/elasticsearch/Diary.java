@@ -27,7 +27,7 @@ public class Diary {
     )
     private String title;
 
-    // 사용자 아이디(Long, 수정 필요)
+    // 사용자 아이디(Long)
     @Field(type = FieldType.Keyword)
     private Long memberId;
 

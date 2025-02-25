@@ -16,6 +16,7 @@ public class DiaryService {
     private DiaryRepository diaryRepository;
     private MemberRepository memberRepository;
 
+    // 다이어리 생성
     public boolean createDiary(DiaryReqDto dto) {
         try{
             Member member = memberRepository.findByUserId(dto.getUserId()).orElseThrow(()-> new RuntimeException("Member not found"));
