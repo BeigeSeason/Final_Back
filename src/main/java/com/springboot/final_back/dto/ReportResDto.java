@@ -18,6 +18,7 @@ public class ReportResDto {
     private String reportType;
     private Member reporter;
     private Member reported;
+    private String reportEntity;
 //    private Diary diaryId;
 //    private Review reviewId;
     private String reason;
@@ -25,12 +26,15 @@ public class ReportResDto {
     private LocalDateTime checkedAt;
     private State state;
 
+    private String reviewContent;
+
     public static ReportResDto of(Report report) {
         return ReportResDto.builder()
                 .id(report.getId())
                 .reportType(String.valueOf(report.getReportType()))
                 .reporter(report.getReporter())
                 .reported(report.getReported())
+                .reportEntity(report.getReportEntity())
                 .reason(report.getReason())
                 .createdAt(report.getCreatedAt())
                 .checkedAt(report.getCheckedAt())
