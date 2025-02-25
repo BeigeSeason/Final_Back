@@ -21,22 +21,51 @@ public class AdminService {
     public Page<MemberResDto> getMemberAllList(int page, int size, String searchType, String searchValue, Boolean type, String sort) {
         Sort sortBy = Sort.by("id").descending();
 
+        // type이 있을 경우 정렬
         if (type != null) {
             if (type) {
-                sortBy = Sort.by("banned").descending();  // banned가 true인 회원을 우선적으로 정렬
+                sortBy = Sort.by("banned").descending();
             } else {
-                sortBy = Sort.by("banned").ascending();   // banned가 false인 회원을 우선적으로 정렬
+                sortBy = Sort.by("banned").ascending();
+            }
+            if (sort != null) {
+                switch (sort) {
+                    case "idAsc":
+                        sortBy = sortBy.and(Sort.by("id").ascending());
+                        break;
+                    case "idDesc":
+                        sortBy = sortBy.and(Sort.by("id").descending());
+                        break;
+                    case "userIdAsc":
+                        sortBy = sortBy.and(Sort.by("userId").ascending());
+                        break;
+                    case "userIdDesc":
+                        sortBy = sortBy.and(Sort.by("userId").descending());
+                        break;
+                    default:
+                        break;
+                }
             }
         }
 
-        if (sort != null) {
-            sortBy = switch (sort) {
-                case "idAsc" -> sortBy.and(Sort.by("id").ascending());
-                case "idDesc" -> sortBy.and(Sort.by("id").descending());
-                case "userIdAsc" -> sortBy.and(Sort.by("userId").ascending());
-                case "userIdDesc" -> sortBy.and(Sort.by("userId").descending());
-                default -> sortBy;
-            };
+        // type이 없고 sort만 있을 때 정렬
+        if (type == null && sort != null) {
+            switch (sort) {
+                case "idAsc":
+                    sortBy = Sort.by("id").ascending();
+                    break;
+                case "idDesc":
+                    sortBy = Sort.by("id").descending();
+                    break;
+                case "userIdAsc":
+                    sortBy = Sort.by("userId").ascending();
+                    break;
+                case "userIdDesc":
+                    sortBy = Sort.by("userId").descending();
+                    break;
+                default:
+                    break;
+            }
         }
 
         Pageable pageable = PageRequest.of(page, size, sortBy);
