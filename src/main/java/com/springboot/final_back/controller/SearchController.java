@@ -20,7 +20,7 @@ public class SearchController {
     @GetMapping("/tour-list")
     public ResponseEntity<Page<TourSpotListDto>> findTourSpotList(@RequestParam(defaultValue = "0") int page,
                                                                   @RequestParam(defaultValue = "20") int size,
-                                                                  @RequestParam String keyword) {
+                                                                  @RequestParam(required = false) String keyword) {
         log.info(keyword);
         return new ResponseEntity<>(searchService.searchTourSpots(page, size, keyword), HttpStatus.OK);
     }
