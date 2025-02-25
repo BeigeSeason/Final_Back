@@ -1,6 +1,5 @@
-package com.springboot.final_back.dto;
+package com.springboot.final_back.dto.search;
 
-import com.springboot.final_back.entity.elasticsearch.TourSpots;
 import lombok.*;
 
 @Getter

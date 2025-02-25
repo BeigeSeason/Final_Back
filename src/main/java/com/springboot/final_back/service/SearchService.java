@@ -1,7 +1,7 @@
 package com.springboot.final_back.service;
 
 
-import com.springboot.final_back.dto.TourSpotListDto;
+import com.springboot.final_back.dto.search.TourSpotListDto;
 import com.springboot.final_back.entity.elasticsearch.Diary;
 import com.springboot.final_back.entity.elasticsearch.TourSpots;
 import com.springboot.final_back.repository.DiaryRepository;
