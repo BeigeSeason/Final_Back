@@ -25,12 +25,19 @@ public class AdminController {
 
     // 멤버 조회
     @GetMapping("/member-list")
-    public ResponseEntity<Page<MemberResDto>> getAllMembers(@RequestParam(defaultValue = "0") int page,
+    public ResponseEntity<Map<String, Object>> getAllMembers(@RequestParam(defaultValue = "0") int page,
                                                             @RequestParam(defaultValue = "10") int size,
                                                             @RequestParam(required = false) String searchType,
-                                                            @RequestParam(required = false) String searchValue) {
-        Page<MemberResDto> members = adminService.getMemberAllList(page, size, searchType, searchValue);
-        return ResponseEntity.ok(members);
+                                                            @RequestParam(required = false) String searchValue,
+                                                             @RequestParam(required = false) Boolean type,
+                                                             @RequestParam(required = false) String sort) {
+        Page<MemberResDto> members = adminService.getMemberAllList(page, size, searchType, searchValue, type, sort);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("members", members.getContent());
+        response.put("totalElements", members.getTotalElements());
+
+        return ResponseEntity.ok(response);
     }
 
     // 신고 조회
