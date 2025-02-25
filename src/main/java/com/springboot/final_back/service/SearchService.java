@@ -30,8 +30,7 @@ public class SearchService {
         Page<TourSpots> pages = tourSpotsRepository.findByTitleOrAddr1(keyword, keyword, pageable);
         log.info(pages.toString());
         for(TourSpots tourSpots : pages) {
-            log.warn(tourSpots.getFirstImage());
-            log.warn(tourSpots.getFirstImage2());
+            log.warn(tourSpots.toString());
         }
 
         return pages.map(TourSpots::convertToListDto);
