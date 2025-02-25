@@ -13,6 +13,7 @@ import org.springframework.data.elasticsearch.annotations.MultiField;
 
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @Document(indexName = "tour_spots")
@@ -120,6 +121,19 @@ public class TourSpots {
     // 지도 레벨 (시간 남으면 제거)
     @Field(type = FieldType.Float, name = "m_level")
     private Float mLevel;
+
+    @Data
+    private static class detail{
+        @Field(type = FieldType.Keyword)
+        private List<String> images;
+
+        @Field(type = FieldType.Keyword)
+        private String detailInfo;
+
+        @Field(type = FieldType.Keyword)
+        private String platTime;
+
+    }
 
     public TourSpotListDto convertToListDto(){
         return TourSpotListDto.builder()

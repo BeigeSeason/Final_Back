@@ -69,10 +69,6 @@ public class SearchService {
         }else {
             pages = tourSpotsRepository.findByTitleOrAddr1(keyword, keyword, pageable);
         }
-        log.info(pages.toString());
-        for(TourSpots tourSpots : pages) {
-            log.warn(tourSpots.toString());
-        }
 
         return pages.map(TourSpots::convertToListDto);
     }

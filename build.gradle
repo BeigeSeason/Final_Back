@@ -55,6 +55,9 @@ dependencies {
 
     // dotenv
     implementation 'io.github.cdimascio:java-dotenv:5.2.2'
+
+    // redis
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 }
 
 tasks.named('test') {
