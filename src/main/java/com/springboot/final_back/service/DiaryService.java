@@ -40,4 +40,16 @@ public class DiaryService {
             throw new RuntimeException(e);
         }
     }
+
+    // 다이어리 삭제
+    public boolean deleteDiary(String diaryId) {
+        try {
+            Diary diary = diaryRepository.findById(diaryId)
+                    .orElseThrow(() -> new RuntimeException("해당 일기를 찾을 수 없습니다."));
+            diaryRepository.delete(diary);
+            return true;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

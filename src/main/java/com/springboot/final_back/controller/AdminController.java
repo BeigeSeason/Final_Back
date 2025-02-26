@@ -3,15 +3,15 @@ package com.springboot.final_back.controller;
 import com.springboot.final_back.dto.MemberResDto;
 import com.springboot.final_back.dto.ReportResDto;
 import com.springboot.final_back.entity.mysql.Member;
-import com.springboot.final_back.service.AdminService;
-import com.springboot.final_back.service.MemberService;
-import com.springboot.final_back.service.ReportService;
+import com.springboot.final_back.service.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.transaction.Transactional;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -22,6 +22,8 @@ import java.util.Map;
 public class AdminController {
     private final AdminService adminService;
     private final ReportService reportService;
+    private final DiaryService diaryService;
+    private final ReviewService reviewService;
 
     // 멤버 조회
     @GetMapping("/member-list")
@@ -53,5 +55,45 @@ public class AdminController {
         response.put("totalElements", reports.getTotalElements());  // 전체 데이터 수
 
         return ResponseEntity.ok(response);
+    }
+
+    // 신고 관리
+    @PostMapping("/report-manage")
+    @Transactional
+    public ResponseEntity<Boolean> reportManage(@RequestParam Long reportId,
+                                                @RequestParam boolean state,
+                                                @RequestParam(required = false) Long userId,
+                                                @RequestParam(required = false) Integer day,
+                                                @RequestParam(required = false) String reason,
+                                                @RequestParam(required = false) String diaryId,
+                                                @RequestParam(required = false) Long reviewId) {
+        try {
+            // 신고 처리
+            boolean isSuccess = adminService.reportProcess(reportId, state);
+            // 유저 정지
+            if (userId != null) {
+                banManage(userId, day, reason);
+            }
+            // 일기 삭제
+            if (diaryId != null) {
+                diaryService.deleteDiary(diaryId);
+            }
+            // 댓글 삭제
+            if (reviewId != null) {
+                reviewService.deleteReview(reviewId);
+            }
+            return ResponseEntity.ok(isSuccess);
+        } catch (Exception e) {
+            return  ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(false);
+        }
+    }
+
+    // 유저 정지
+    @PostMapping("/member-ban")
+    public ResponseEntity<Boolean> banManage(@RequestParam Long id,
+                                             @RequestParam int day,
+                                             @RequestParam String reason) {
+        boolean isSuccess = adminService.memberBan(id, day, reason);
+        return ResponseEntity.ok(isSuccess);
     }
 }
