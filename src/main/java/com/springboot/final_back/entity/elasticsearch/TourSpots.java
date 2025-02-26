@@ -122,17 +122,27 @@ public class TourSpots {
     @Field(type = FieldType.Float, name = "m_level")
     private Float mLevel;
 
+    // 중첩 객체 관리를 위해 Nested 설정
+    @Field(type = FieldType.Nested)
+    private Detail detail;
+
+    // detail 필드는 여기서밖에 사용하지 않기 때문에 엔티티 내부에 정의함
     @Data
-    private static class detail{
+    public static class Detail{
         @Field(type = FieldType.Keyword)
         private List<String> images;
 
         @Field(type = FieldType.Keyword)
-        private String detailInfo;
+        private String overview;
 
         @Field(type = FieldType.Keyword)
-        private String platTime;
+        private String useTime;
 
+        @Field(type = FieldType.Keyword)
+        private String parking;
+
+        @Field(type = FieldType.Keyword)
+        private String homepage;
     }
 
     public TourSpotListDto convertToListDto(){
