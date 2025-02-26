@@ -35,8 +35,14 @@ public class TourSpotService {
     private final ElasticsearchOperations elasticsearchOperations;
     private final RestTemplate restTemplate;
 
-    @Value("${tour.api.service-key}")
-    private String serviceKey;
+    @Value("${tour.api.service-key1}")
+    private String serviceKey1;
+
+    @Value("${tour.api.service-key2}")
+    private String serviceKey2;
+
+    @Value("${tour.api.service-key3}")
+    private String serviceKey3;
 
     private static final String BASE_URL = "https://apis.data.go.kr/B551011/KorService1";
     private static final String INDEX_NAME = "tour_spots";
@@ -67,9 +73,9 @@ public class TourSpotService {
 
     private TourSpotDetailDto fetchDetailFromApi(String contentId, String contentTypeId) {
         try {
-            log.info("Service Key: {}", serviceKey);
+
             String commonUrl = BASE_URL + "/detailCommon1?MobileOS=ETC&MobileApp=Final_test&_type=json" +
-                    "&contentId=" + contentId + "&defaultYN=Y&overviewYN=Y&serviceKey=" + serviceKey;
+                    "&contentId=" + contentId + "&defaultYN=Y&overviewYN=Y&serviceKey=" + serviceKey1;
             log.info("호출 URL (common): {}", commonUrl);
 
             URL url = new URL(commonUrl);
@@ -93,7 +99,7 @@ public class TourSpotService {
 
             // 2. detailImage1 호출
             String imageUrl = BASE_URL + "/detailImage1?MobileOS=ETC&MobileApp=Final_test&_type=json" +
-                    "&contentId=" + contentId + "&subImageYN=Y&serviceKey=" + serviceKey;
+                    "&contentId=" + contentId + "&subImageYN=Y&serviceKey=" + serviceKey2;
             log.info("호출 URL (image): {}", imageUrl);
             URL imageUrlObj = new URL(imageUrl);
             HttpURLConnection imageConn = (HttpURLConnection) imageUrlObj.openConnection();
@@ -114,7 +120,7 @@ public class TourSpotService {
 
             // 3. detailIntro1 호출
             String introUrl = BASE_URL + "/detailIntro1?MobileOS=ETC&MobileApp=Final_test&_type=json" +
-                    "&contentId=" + contentId + "&contentTypeId=" + contentTypeId + "&serviceKey=" + serviceKey;
+                    "&contentId=" + contentId + "&contentTypeId=" + contentTypeId + "&serviceKey=" + serviceKey3;
             log.info("호출 URL (intro): {}", introUrl);
             URL introUrlObj = new URL(introUrl);
             HttpURLConnection introConn = (HttpURLConnection) introUrlObj.openConnection();
