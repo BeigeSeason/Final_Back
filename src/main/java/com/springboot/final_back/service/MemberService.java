@@ -6,14 +6,7 @@ import com.springboot.final_back.entity.mysql.Member;
 import com.springboot.final_back.repository.MemberRepository;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @Slf4j
 @Service
@@ -43,5 +36,18 @@ public class MemberService {
             return false;
         }
     }
+    // 회원 아이디 중복 확인
+    public boolean checkIdDuplicate(String userId) {
+        return memberRepository.existsByUserId(userId);
+    }
 
+    // 회원 이메일 중복 확인
+    public boolean checkEmailDuplicate(String email) {
+        return memberRepository.existsByEmail(email);
+    }
+
+    // 회원 닉네임 중복 확인
+    public boolean checkNicknameDuplicate(String nickname) {
+        return memberRepository.existsByNickname(nickname);
+    }
 }

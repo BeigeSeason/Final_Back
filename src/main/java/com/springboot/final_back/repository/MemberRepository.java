@@ -22,4 +22,10 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     Page<Member> findByEmailContaining(String email, Pageable pageable);
 
     List<Member> findByIdIn(Collection<Long> ids);
+
+    boolean existsByUserId(String userId);
+
+    boolean existsByEmail(String email);
+
+    boolean existsByNickname(String nickname);
 }
