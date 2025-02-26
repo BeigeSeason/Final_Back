@@ -1,5 +1,6 @@
 package com.springboot.final_back.controller;
 
+import com.springboot.final_back.dto.BanReqDto;
 import com.springboot.final_back.dto.MemberResDto;
 import com.springboot.final_back.dto.ReportResDto;
 import com.springboot.final_back.entity.mysql.Member;
@@ -72,7 +73,7 @@ public class AdminController {
             boolean isSuccess = adminService.reportProcess(reportId, state);
             // 유저 정지
             if (userId != null) {
-                banManage(userId, day, reason);
+                adminService.memberBan(userId, day, reason);
             }
             // 일기 삭제
             if (diaryId != null) {
@@ -90,10 +91,8 @@ public class AdminController {
 
     // 유저 정지
     @PostMapping("/member-ban")
-    public ResponseEntity<Boolean> banManage(@RequestParam Long id,
-                                             @RequestParam int day,
-                                             @RequestParam String reason) {
-        boolean isSuccess = adminService.memberBan(id, day, reason);
+    public ResponseEntity<Boolean> banManage(@RequestBody BanReqDto request) {
+        boolean isSuccess = adminService.memberBan(request.getId(), request.getDay(), request.getReason());
         return ResponseEntity.ok(isSuccess);
     }
 }
