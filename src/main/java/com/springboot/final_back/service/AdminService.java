@@ -140,6 +140,7 @@ public class AdminService {
             // 유저 상태 변경, 종료 날짜 설정
             if (alreadyBanned == null) {
                 endDate = LocalDateTime.now().plusDays(day).with(LocalTime.of(0, 0));
+                member.setBanned(true);
                 member.setRole(MemberRole.BANNED);
                 memberRepository.save(member);
             } else {

@@ -21,6 +21,7 @@ public class ReviewService {
                     .orElseThrow(() -> new RuntimeException("해당 댓글을 찾을 수 없습니다."));
             review.setRating(rating);
             review.setContent(content);
+            reviewRepository.save(review);
             return true;
         } catch (Exception e) {
             log.info("댓글 수정 오류: {}", e.getMessage());

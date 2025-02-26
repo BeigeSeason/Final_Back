@@ -45,6 +45,7 @@ public class BanSchedule {
                     if (optionalMember.isPresent()) {
                         Member member = optionalMember.get();
                         member.setRole(MemberRole.USER);
+                        member.setBanned(false);
                         updatedMembers.add(member);
                     } else {
                         log.warn("해당 멤버를 찾을 수 없습니다: {}", ban.getMember().getId());
