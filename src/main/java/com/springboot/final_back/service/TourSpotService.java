@@ -20,6 +20,7 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -55,12 +56,19 @@ public class TourSpotService {
                 TourSpots tourSpot = tourSpotOpt.get();
                 TourSpots.Detail detail = tourSpot.getDetail();
 
+                log.info("썸네일 : {}", tourSpot.getFirstImage());
                 if (detail != null) {
+                    // 썸네일을 이미지 목록에 포함시켜 전송
+                    if (!tourSpot.getFirstImage().isEmpty()) detail.getImages().add(0, tourSpot.getFirstImage());
+                    log.info(detail.getImages().toString());
                     return convertToDto(tourSpot, detail);
                 }
 
                 TourSpotDetailDto detailDto = fetchDetailFromApi(tourSpotId, tourSpot.getContentTypeId());
-                saveDetailToElasticsearch(tourSpotOpt.get().getId(), detailDto);
+                saveDetailToElasticsearch(tourSpot.getId(), detailDto);
+                // 썸네일을 이미지 목록에 포함시켜 전송
+                if (!tourSpot.getFirstImage().isEmpty()) detailDto.getImages().add(0, tourSpot.getFirstImage());
+                log.info(detailDto.getImages().toString());
                 return detailDto;
             } else {
                 throw new RuntimeException("해당 관광지 데이터가 없습니다: " + tourSpotId);
@@ -71,73 +79,23 @@ public class TourSpotService {
         }
     }
 
+    // 여행지 상세정보 존재하지 않을 시 Api 요청
     private TourSpotDetailDto fetchDetailFromApi(String contentId, String contentTypeId) {
         try {
-
+            // 1. detailCommon1 호출
             String commonUrl = BASE_URL + "/detailCommon1?MobileOS=ETC&MobileApp=Final_test&_type=json" +
                     "&contentId=" + contentId + "&defaultYN=Y&overviewYN=Y&serviceKey=" + serviceKey1;
-            log.info("호출 URL (common): {}", commonUrl);
-
-            URL url = new URL(commonUrl);
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("GET");
-            conn.setRequestProperty("Accept", "application/json");
-            conn.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36");
-
-            StringBuilder responseBody = new StringBuilder();
-            try (BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"))) {
-                String line;
-                while ((line = br.readLine()) != null) {
-                    responseBody.append(line);
-                }
-            }
-
-            ObjectMapper mapper = new ObjectMapper();
-            Map<String, Object> commonResponse = mapper.readValue(responseBody.toString(), new TypeReference<>() {
-            });
-            Map<String, Object> commonItem = extractItem(commonResponse);
+            Map<String, Object> commonItem = fetchApiData(commonUrl, "common", true);
 
             // 2. detailImage1 호출
             String imageUrl = BASE_URL + "/detailImage1?MobileOS=ETC&MobileApp=Final_test&_type=json" +
                     "&contentId=" + contentId + "&subImageYN=Y&serviceKey=" + serviceKey2;
-            log.info("호출 URL (image): {}", imageUrl);
-            URL imageUrlObj = new URL(imageUrl);
-            HttpURLConnection imageConn = (HttpURLConnection) imageUrlObj.openConnection();
-            imageConn.setRequestMethod("GET");
-            imageConn.setRequestProperty("Accept", "application/json");
-            imageConn.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36");
-
-            StringBuilder imageResponseBody = new StringBuilder();
-            try (BufferedReader br = new BufferedReader(new InputStreamReader(imageConn.getInputStream(), "UTF-8"))) {
-                String line;
-                while ((line = br.readLine()) != null) {
-                    imageResponseBody.append(line);
-                }
-            }
-            Map<String, Object> imageResponse = mapper.readValue(imageResponseBody.toString(), new TypeReference<>() {
-            });
-            List<Map<String, Object>> imageItems = extractItems(imageResponse);
+            List<Map<String, Object>> imageItems = fetchApiData(imageUrl, "image", false);
 
             // 3. detailIntro1 호출
             String introUrl = BASE_URL + "/detailIntro1?MobileOS=ETC&MobileApp=Final_test&_type=json" +
                     "&contentId=" + contentId + "&contentTypeId=" + contentTypeId + "&serviceKey=" + serviceKey3;
-            log.info("호출 URL (intro): {}", introUrl);
-            URL introUrlObj = new URL(introUrl);
-            HttpURLConnection introConn = (HttpURLConnection) introUrlObj.openConnection();
-            introConn.setRequestMethod("GET");
-            introConn.setRequestProperty("Accept", "application/json");
-            introConn.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36");
-
-            StringBuilder introResponseBody = new StringBuilder();
-            try (BufferedReader br = new BufferedReader(new InputStreamReader(introConn.getInputStream(), "UTF-8"))) {
-                String line;
-                while ((line = br.readLine()) != null) {
-                    introResponseBody.append(line);
-                }
-            }
-            Map<String, Object> introResponse = mapper.readValue(introResponseBody.toString(), new TypeReference<>() {
-            });
-            Map<String, Object> introItem = extractItem(introResponse);
+            Map<String, Object> introItem = fetchApiData(introUrl, "intro", true);
 
             return TourSpotDetailDto.builder()
                     .contentId(contentId)
@@ -160,6 +118,39 @@ public class TourSpotService {
         }
     }
 
+    // 공통 API 호출 메서드
+    @SuppressWarnings("unchecked") // JSON 응답 구조가 Map<String, Object>로 고정돼 있어 안전함
+    private <T> T fetchApiData(String url, String logLabel, boolean isSingleItem) {
+        try {
+            log.info("호출 URL ({}): {}", logLabel, url);
+
+            URL urlObj = new URL(url);
+            HttpURLConnection conn = (HttpURLConnection) urlObj.openConnection();
+            conn.setRequestMethod("GET");
+            conn.setRequestProperty("Accept", "application/json");
+            conn.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36");
+
+            StringBuilder responseBody = new StringBuilder();
+            try (BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8))) {
+                String line;
+                while ((line = br.readLine()) != null) {
+                    responseBody.append(line);
+                }
+            }
+            log.info("응답 상태 ({}): {}", logLabel, conn.getResponseCode());
+
+            ObjectMapper mapper = new ObjectMapper();
+            Map<String, Object> response = mapper.readValue(responseBody.toString(), new TypeReference<Map<String, Object>>() {
+            });
+
+            return isSingleItem ? (T) extractItem(response) : (T) extractItems(response);
+        } catch (Exception e) {
+            log.error("API 호출 중 오류 ({}): {}", logLabel, e.getMessage());
+            throw new RuntimeException("API 호출 실패: " + logLabel);
+        }
+    }
+
+    // 상세정보 엘라스틱 서치에 저장하기
     private void saveDetailToElasticsearch(String contentId, TourSpotDetailDto detailDto) {
         UpdateQuery updateQuery = UpdateQuery.builder(contentId)
                 .withDocument(Document.from(Map.of(
@@ -176,7 +167,7 @@ public class TourSpotService {
         log.info("관광지 {} 상세 정보 저장 완료", contentId);
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("unchecked") // JSON 응답 구조가 Map<String, Object>로 고정돼 있어 안전함
     private Map<String, Object> extractItem(Map<String, Object> response) {
         try {
             Map<String, Object> body = (Map<String, Object>) response.get("response");
@@ -189,7 +180,7 @@ public class TourSpotService {
         }
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("unchecked") // JSON 응답 구조가 Map<String, Object>로 고정돼 있어 안전함
     private List<Map<String, Object>> extractItems(Map<String, Object> response) {
         try {
             Map<String, Object> body = (Map<String, Object>) response.get("response");
