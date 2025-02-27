@@ -14,7 +14,7 @@ public class TourSpotDetailDto {
     private String contentId;         // 관광지 ID
     private String title;             // 관광지 제목
     private String addr1;             // 주소
-    private String contact;           // 연락처 (기존 tel 재사용)
+    private String infoCenter;           // 연락처 (기존 tel 재사용)
     private Float mapX;               // 경도
     private Float mapY;               // 위도
     private List<String> images;      // 상세 이미지 URL 리스트 (detailImage1에서)

@@ -56,8 +56,9 @@ public class TourSpotService {
                 TourSpots tourSpot = tourSpotOpt.get();
                 TourSpots.Detail detail = tourSpot.getDetail();
 
-                log.info("썸네일 : {}", tourSpot.getFirstImage());
+
                 if (detail != null) {
+                    log.info("디테일 : {}", detail.toString());
                     // 썸네일을 이미지 목록에 포함시켜 전송
                     if (!tourSpot.getFirstImage().isEmpty()) detail.getImages().add(0, tourSpot.getFirstImage());
                     log.info(detail.getImages().toString());
@@ -69,6 +70,9 @@ public class TourSpotService {
                 // 썸네일을 이미지 목록에 포함시켜 전송
                 if (!tourSpot.getFirstImage().isEmpty()) detailDto.getImages().add(0, tourSpot.getFirstImage());
                 log.info(detailDto.getImages().toString());
+                detailDto.setAddr1(tourSpot.getAddr1());
+                detailDto.setMapX(tourSpot.getMapX());
+                detailDto.setMapY(tourSpot.getMapY());
                 return detailDto;
             } else {
                 throw new RuntimeException("해당 관광지 데이터가 없습니다: " + tourSpotId);
@@ -100,17 +104,14 @@ public class TourSpotService {
             return TourSpotDetailDto.builder()
                     .contentId(contentId)
                     .title((String) commonItem.getOrDefault("title", ""))
-                    .addr1((String) commonItem.getOrDefault("addr1", ""))
                     .images(imageItems.stream()
                             .map(item -> (String) item.get("originimgurl"))
                             .collect(Collectors.toList()))
                     .overview((String) commonItem.getOrDefault("overview", ""))
                     .homepage((String) commonItem.getOrDefault("homepage", ""))
+                    .infoCenter((String) introItem.getOrDefault("infocenter", ""))
                     .useTime((String) introItem.getOrDefault("usetime", ""))
                     .parking((String) introItem.getOrDefault("parking", ""))
-                    .contact((String) commonItem.getOrDefault("tel", ""))
-                    .mapX(Float.valueOf(String.valueOf(commonItem.getOrDefault("mapx", "0"))))
-                    .mapY(Float.valueOf(String.valueOf(commonItem.getOrDefault("mapy", "0"))))
                     .build();
         } catch (Exception e) {
             log.error("API 호출 중 오류 - contentId: {}: {}", contentId, e.getMessage());
@@ -157,8 +158,9 @@ public class TourSpotService {
                         "detail", Map.of(
                                 "images", detailDto.getImages(),
                                 "overview", detailDto.getOverview(),
+                                "info_center", detailDto.getInfoCenter(),
                                 "homepage", detailDto.getHomepage(),
-                                "useTime", detailDto.getUseTime(),
+                                "use_time", detailDto.getUseTime(),
                                 "parking", detailDto.getParking()
                         )
                 )))
@@ -200,9 +202,9 @@ public class TourSpotService {
                 .images(detail.getImages())
                 .overview(detail.getOverview())
                 .homepage(detail.getHomepage())
+                .infoCenter(detail.getInfoCenter())
                 .useTime(detail.getUseTime())
                 .parking(detail.getParking())
-                .contact(tourSpot.getTel())
                 .mapX(tourSpot.getMapX())
                 .mapY(tourSpot.getMapY())
                 .build();
