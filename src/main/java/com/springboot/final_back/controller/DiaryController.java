@@ -17,7 +17,7 @@ public class DiaryController {
     private final DiaryService diaryService;
 
     @PostMapping("/post-diary")
-    public ResponseEntity<String> postDiary(@RequestBody DiaryReqDto reqDto) {
+    public ResponseEntity<Boolean> postDiary(@RequestBody DiaryReqDto reqDto) {
         return new ResponseEntity<>(diaryService.createDiary(reqDto), HttpStatus.OK);
     }
 

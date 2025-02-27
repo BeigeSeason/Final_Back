@@ -19,7 +19,7 @@ public class DiaryService {
     private MemberRepository memberRepository;
 
     // 다이어리 생성
-    public String createDiary(DiaryReqDto dto) {
+    public boolean createDiary(DiaryReqDto dto) {
         try{
             Member member = memberRepository.findByUserId(dto.getUserId()).orElseThrow(()-> new RuntimeException("Member not found"));
             Long memberId = member.getId();
@@ -35,9 +35,9 @@ public class DiaryService {
                     .memberId(memberId)
                     .build();
 
-            Diary savedDiary = diaryRepository.save(diary);
+            diaryRepository.save(diary);
 
-            return savedDiary.getId();
+            return true;
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
