@@ -79,11 +79,11 @@ public class AdminController {
                 adminService.memberBan(userId, day, reason);
             }
             // 일기 삭제
-            if (diaryId != null) {
+            if (diaryId != null && state) {
                 diaryService.deleteDiary(diaryId);
             }
             // 댓글 삭제
-            if (reviewId != null) {
+            if (reviewId != null && state) {
                 reviewService.deleteReview(reviewId);
             }
             return ResponseEntity.ok(isSuccess);
