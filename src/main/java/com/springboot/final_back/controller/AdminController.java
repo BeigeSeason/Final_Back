@@ -61,14 +61,16 @@ public class AdminController {
     // 신고 관리
     @PostMapping("/report-manage")
     @Transactional
-    public ResponseEntity<Boolean> reportManage(@RequestParam Long reportId,
-                                                @RequestParam boolean state,
-                                                @RequestParam(required = false) Long userId,
-                                                @RequestParam(required = false) Integer day,
-                                                @RequestParam(required = false) String reason,
-                                                @RequestParam(required = false) String diaryId,
-                                                @RequestParam(required = false) Long reviewId) {
+    public ResponseEntity<Boolean> reportManage(@RequestBody Map<String, Object> payload) {
         try {
+            Long reportId = Long.valueOf(payload.get("reportId").toString());
+            boolean state = Boolean.parseBoolean(payload.get("state").toString());
+            Long userId = payload.get("userId") != null ? Long.valueOf(payload.get("userId").toString()) : null;
+            Integer day = payload.get("day") != null ? Integer.valueOf(payload.get("day").toString()) : null;
+            String reason = (String) payload.get("reason");
+            String diaryId = payload.get("diaryId") != null ? payload.get("diaryId").toString() : null;
+            Long reviewId = payload.get("reviewId") != null ? Long.valueOf(payload.get("reviewId").toString()) : null;
+
             // 신고 처리
             boolean isSuccess = adminService.reportProcess(reportId, state);
             // 유저 정지
@@ -85,6 +87,7 @@ public class AdminController {
             }
             return ResponseEntity.ok(isSuccess);
         } catch (Exception e) {
+            e.printStackTrace();
             return  ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(false);
         }
     }

@@ -132,10 +132,13 @@ public class TourSpots {
         @Field(type = FieldType.Keyword)
         private List<String> images;
 
+        @Field(type = FieldType.Keyword, name = "info_center")
+        private String infoCenter;
+
         @Field(type = FieldType.Keyword)
         private String overview;
 
-        @Field(type = FieldType.Keyword)
+        @Field(type = FieldType.Keyword, name = "use_time")
         private String useTime;
 
         @Field(type = FieldType.Keyword)
