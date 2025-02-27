@@ -75,13 +75,17 @@ public class Diary {
     )
     private String content;
 
+    // 공개 여부
+
+
     @PrePersist
     public void prePersist() {
         createdTime = LocalDateTime.now();
     }
 
     @Builder
-    private Diary(String title, String region, LocalDateTime startDate, LocalDateTime endDate, Set<String> tags, Float totalCost, String content, Long memberId) {
+    private Diary(String diaryId, String title, String region, LocalDateTime startDate, LocalDateTime endDate, Set<String> tags, Float totalCost, String content, Long memberId) {
+        this.diaryId = diaryId;
         this.title = title;
         this.region = region;
         this.startDate = startDate;

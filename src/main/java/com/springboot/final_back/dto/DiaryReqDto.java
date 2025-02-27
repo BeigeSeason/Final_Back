@@ -12,7 +12,8 @@ import java.util.Set;
 @AllArgsConstructor
 @NoArgsConstructor
 public class DiaryReqDto {
-    private String id;          // 아이디
+    private String id;          // elastic 아이디
+    private String diaryId;     // 다이어리 아이디
     private String title;       // 제목
     private String region;      // 지역
     private LocalDateTime startDate; // 일정 시작일

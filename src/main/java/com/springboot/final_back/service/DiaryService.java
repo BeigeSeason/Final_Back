@@ -25,6 +25,7 @@ public class DiaryService {
             Long memberId = member.getId();
 
             Diary diary = Diary.builder()
+                    .diaryId(dto.getDiaryId())
                     .title(dto.getTitle())
                     .region(dto.getRegion())
                     .startDate(dto.getStartDate())
