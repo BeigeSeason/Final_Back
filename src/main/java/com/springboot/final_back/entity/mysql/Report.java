@@ -21,6 +21,7 @@ public class Report {
 
     // 신고 타입(멤버, 다이어리, 댓글(리뷰)
     @Enumerated(EnumType.STRING)
+    @Column(name = "report_type")
     private Type reportType;
 
     @ManyToOne(fetch = FetchType.EAGER)

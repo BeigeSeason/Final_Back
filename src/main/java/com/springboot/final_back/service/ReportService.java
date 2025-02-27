@@ -1,6 +1,7 @@
 package com.springboot.final_back.service;
 
 
+import com.springboot.final_back.constant.State;
 import com.springboot.final_back.constant.Type;
 import com.springboot.final_back.dto.ReportReqDto;
 import com.springboot.final_back.dto.ReportResDto;
@@ -15,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -48,19 +50,25 @@ public class ReportService {
     }
 
     // 신고 조회
-    public Page<ReportResDto> getReports(int currentPage, int size, String reportType) {
+    public Page<ReportResDto> getReports(int currentPage, int size, String reportType, String type, String sort) {
         try {
-            if (reportType == null) {
-                reportType = "";
+            Sort sortBy;
+            if ("idDesc".equalsIgnoreCase(sort)) {
+                sortBy = Sort.by("id").descending();
+            } else {
+                sortBy = Sort.by("id").ascending();
             }
 
-            Pageable pageable = PageRequest.of(currentPage, size);
+            Pageable pageable = PageRequest.of(currentPage, size, sortBy);
             Page<Report> page;
 
-            if (!reportType.isEmpty()) {
-                page = reportRepository.findAllByReportType(pageable, Type.valueOf(reportType.toUpperCase()));
+            Type reportTypeEnum = Type.valueOf(reportType.toUpperCase());
+
+            if (type != null && !type.isEmpty()) {
+                State state = State.valueOf(type.toUpperCase());
+                page = reportRepository.findAllByReportTypeAndState(pageable, reportTypeEnum, state);
             } else {
-                page = reportRepository.findAll(pageable);
+                page = reportRepository.findAllByReportType(pageable, reportTypeEnum);
             }
 
             // reportType이 REVIEW일 경우, reviewId를 기반으로 Review content 가져오기

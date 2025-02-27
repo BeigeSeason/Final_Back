@@ -47,14 +47,15 @@ public class AdminController {
     @GetMapping("/report-list")
     public ResponseEntity<Map<String, Object>> getReports(@RequestParam(defaultValue = "0") int page,
                                                           @RequestParam(defaultValue = "10") int size,
-                                                          @RequestParam(required = false) String reportType) {
-        Page<ReportResDto> reports = reportService.getReports(page, size, reportType);
+                                                          @RequestParam(required = false) String reportType,
+                                                          @RequestParam(required = false) String type,
+                                                          @RequestParam(required = false) String sort) {
+        Page<ReportResDto> reports = reportService.getReports(page, size, reportType, type, sort);
 
         // 응답에 필요한 데이터만 포함
         Map<String, Object> response = new HashMap<>();
         response.put("reports", reports.getContent());  // 요청된 페이지의 데이터
         response.put("totalElements", reports.getTotalElements());  // 전체 데이터 수
-
         return ResponseEntity.ok(response);
     }
 
