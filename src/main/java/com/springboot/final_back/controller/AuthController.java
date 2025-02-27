@@ -26,4 +26,6 @@ public class AuthController {
     public ResponseEntity<TokenDto> login(@RequestBody LoginDto loginDto) {
         return ResponseEntity.ok(authService.login(loginDto));
     }
+
+    // 내 정보 수정
 }

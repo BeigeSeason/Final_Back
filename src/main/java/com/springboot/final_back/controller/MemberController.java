@@ -1,9 +1,12 @@
 package com.springboot.final_back.controller;
 
+import com.springboot.final_back.dto.MemberResDto;
 import com.springboot.final_back.service.MemberService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -29,5 +32,11 @@ public class MemberController {
     @PostMapping("/nicknameExists/{nickname}")
     public boolean memberNicknameDulicate(@PathVariable String nickname) {
         return memberService.checkNicknameDuplicate(nickname);
+    }
+
+    // 회원 조회
+    @GetMapping("/get-info/{userId}")
+    public MemberResDto getMemberDetail(@PathVariable String userId) {
+        return memberService.getMemberDetail(userId);
     }
 }
