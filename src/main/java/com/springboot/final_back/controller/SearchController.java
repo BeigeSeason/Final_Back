@@ -23,8 +23,12 @@ public class SearchController {
     @GetMapping("/tour-list")
     public ResponseEntity<Page<TourSpotListDto>> findTourSpotList(@RequestParam(defaultValue = "0") int page,
                                                                   @RequestParam(defaultValue = "20") int size,
-                                                                  @RequestParam(required = false) String keyword) {
-        return new ResponseEntity<>(searchService.searchTourSpots(page, size, keyword), HttpStatus.OK);
+                                                                  @RequestParam(required = false) String sort,
+                                                                  @RequestParam(required = false) String keyword,
+                                                                  @RequestParam(required = false) String areaCode,
+                                                                  @RequestParam(required = false) String sigunguCode,
+                                                                  @RequestParam(required = false) String contentTypeId) {
+        return new ResponseEntity<>(searchService.searchTourSpots(page, size, sort, keyword, areaCode, sigunguCode, contentTypeId), HttpStatus.OK);
     }
 
     @GetMapping("/spot-detail")

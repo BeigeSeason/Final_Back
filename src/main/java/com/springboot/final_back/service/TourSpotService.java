@@ -58,7 +58,6 @@ public class TourSpotService {
 
 
                 if (detail != null) {
-                    log.info("디테일 : {}", detail.toString());
                     // 썸네일을 이미지 목록에 포함시켜 전송
                     if (!tourSpot.getFirstImage().isEmpty()) detail.getImages().add(0, tourSpot.getFirstImage());
                     log.info(detail.getImages().toString());

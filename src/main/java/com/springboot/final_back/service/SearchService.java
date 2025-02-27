@@ -11,21 +11,34 @@ import com.springboot.final_back.repository.MemberRepository;
 import com.springboot.final_back.repository.TourSpotsRepository;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.elasticsearch.index.query.BoolQueryBuilder;
+import org.elasticsearch.index.query.QueryBuilders;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
+import org.springframework.data.elasticsearch.core.SearchHit;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.stream.Collectors;import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.elasticsearch.core.SearchHits;
+import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilder;
+import org.springframework.data.elasticsearch.core.query.Query;
+import static org.elasticsearch.index.query.QueryBuilders.*;
 
 @Slf4j
 @Service
 @AllArgsConstructor
 public class SearchService {
     private final TourSpotsRepository tourSpotsRepository;
+    private final ElasticsearchOperations elasticsearchOperations;
     private final DiaryRepository diaryRepository;
     private final MemberRepository memberRepository;
 
@@ -61,16 +74,37 @@ public class SearchService {
         return new PageImpl<>(dtoList, pageable, diaryPage.getTotalElements());
     }
 
-    public Page<TourSpotListDto> searchTourSpots(int page, int size, String keyword) {
-        Pageable pageable = PageRequest.of(page, size);
-        Page<TourSpots> pages;
-        if(keyword == null){
-            pages = tourSpotsRepository.findAll(pageable);
-        }else {
-            pages = tourSpotsRepository.findByTitleOrAddr1(keyword, keyword, pageable);
+    public Page<TourSpotListDto> searchTourSpots(int page, int size, String sort, String keyword,
+                                                 String areaCode, String sigunguCode, String contentTypeId) {
+        Sort sortOrder = sort != null ? Sort.by(Sort.Direction.fromString(sort.split(",")[1]), sort.split(",")[0]) :
+                Sort.by(Sort.Direction.ASC, "title.keyword");
+        Pageable pageable = PageRequest.of(page, size, sortOrder);
+
+        BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
+
+        // 검색어 처리
+        if (keyword != null && !keyword.isEmpty()) {
+            boolQuery.must(QueryBuilders.multiMatchQuery(keyword, "title", "addr1"));
+        } else {
+            boolQuery.must(QueryBuilders.matchAllQuery());
         }
 
-        return pages.map(TourSpots::convertToListDto);
+        // 필터링
+        if (areaCode != null) boolQuery.filter(QueryBuilders.termQuery("area_code", areaCode));
+        if (sigunguCode != null) boolQuery.filter(QueryBuilders.termQuery("sigungu_code", sigunguCode));
+        if (contentTypeId != null) boolQuery.filter(QueryBuilders.termQuery("content_type_id", contentTypeId));
+
+        Query query = new NativeSearchQueryBuilder()
+                .withQuery(boolQuery)
+                .withPageable(pageable)
+                .build();
+
+        SearchHits<TourSpots> searchHits = elasticsearchOperations.search(query, TourSpots.class);
+        return new PageImpl<>(
+                searchHits.getSearchHits().stream().map(SearchHit::getContent).map(TourSpots::convertToListDto).collect(Collectors.toList()),
+                pageable,
+                searchHits.getTotalHits()
+        );
     }
 
 }

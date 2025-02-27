@@ -105,7 +105,6 @@ public class TourSpots {
     @Field(type = FieldType.Keyword, name = "cpyrht_div_cd")
     private String cpyrhtDivCd;
 
-
     // 전화번호
     @Field(type = FieldType.Keyword, name = "tel")
     private String tel;
