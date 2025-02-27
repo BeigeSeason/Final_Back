@@ -16,12 +16,6 @@ import org.springframework.web.bind.annotation.*;
 public class DiaryController {
     private final DiaryService diaryService;
 
-    // Diary id 마지막번호+1 가져오기
-    @GetMapping("/new-diaryid")
-    public ResponseEntity<Long> getNewDiaryId() {
-        return ResponseEntity.ok(diaryService.getLastDiaryId() + 1);
-    }
-
     @PostMapping("/post-diary")
     public ResponseEntity<String> postDiary(@RequestBody DiaryReqDto reqDto) {
         return new ResponseEntity<>(diaryService.createDiary(reqDto), HttpStatus.OK);

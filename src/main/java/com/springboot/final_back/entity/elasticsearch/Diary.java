@@ -15,8 +15,10 @@ import java.util.Set;
 public class Diary {
     // 다이어리 구분자(자동 생성)
     @Id
-    @Field(name = "diaryId", type = FieldType.Keyword) // 필드명 : diaryId, 검색이나 필터링 시 분석(토큰화) 없이 그대로 사용
     private String id;
+
+    @Field(name = "diary_id", type = FieldType.Keyword) // 필드명 : diaryId, 검색이나 필터링 시 분석(토큰화) 없이 그대로 사용
+    private String diaryId;
 
     // 제목
     @MultiField( // 한 필드를 여러 방식으로 인덱싱

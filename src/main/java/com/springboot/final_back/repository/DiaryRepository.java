@@ -14,6 +14,4 @@ public interface DiaryRepository extends ElasticsearchRepository<Diary, String> 
 
     Page<Diary> findByTitle(String title, Pageable pageable);
 
-    @Query("{ \"size\": 0, \"aggs\": { \"max_id\": { \"max\": { \"field\": \"diaryId\" } } } }")
-    Map<String, Object> findLastId();
 }
