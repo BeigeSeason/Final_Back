@@ -76,7 +76,8 @@ public class Diary {
     private String content;
 
     // 공개 여부
-
+    @Field(type = FieldType.Boolean, name = "is_public")
+    private boolean isPublic;
 
     @PrePersist
     public void prePersist() {
@@ -84,7 +85,7 @@ public class Diary {
     }
 
     @Builder
-    private Diary(String diaryId, String title, String region, LocalDateTime startDate, LocalDateTime endDate, Set<String> tags, Float totalCost, String content, Long memberId) {
+    private Diary(String diaryId, String title, String region, LocalDateTime startDate, LocalDateTime endDate, Set<String> tags, Float totalCost, String content, Long memberId, boolean isPublic) {
         this.diaryId = diaryId;
         this.title = title;
         this.region = region;
@@ -94,5 +95,6 @@ public class Diary {
         this.totalCost = totalCost;
         this.content = content;
         this.memberId = memberId;
+        this.isPublic = isPublic;
     }
 }

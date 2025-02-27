@@ -22,4 +22,5 @@ public class DiaryReqDto {
     private Float totalCost;      // 여행 경비
     private String content;     // 내용
     private String userId;
+    private boolean isPublic;
 }

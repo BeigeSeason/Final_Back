@@ -34,6 +34,7 @@ public class DiaryService {
                     .totalCost(dto.getTotalCost())
                     .content(dto.getContent())
                     .memberId(memberId)
+                    .isPublic(dto.isPublic())
                     .build();
 
             diaryRepository.save(diary);
