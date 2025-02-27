@@ -23,7 +23,9 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;import org.springframework.data.domain.Page;
+import java.util.stream.Collectors;
+
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -31,6 +33,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilder;
 import org.springframework.data.elasticsearch.core.query.Query;
+
 import static org.elasticsearch.index.query.QueryBuilders.*;
 
 @Slf4j
@@ -44,8 +47,8 @@ public class SearchService {
 
     public Page<DiarySearchListDto> searchByTitle(String keyword, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
-        Page<Diary> diaryPage =diaryRepository.findByTitle(keyword, pageable);
-        if(diaryPage.isEmpty()){
+        Page<Diary> diaryPage = diaryRepository.findByTitle(keyword, pageable);
+        if (diaryPage.isEmpty()) {
             return Page.empty();
         }
 
@@ -74,10 +77,20 @@ public class SearchService {
         return new PageImpl<>(dtoList, pageable, diaryPage.getTotalElements());
     }
 
-    public Page<TourSpotListDto> searchTourSpots(int page, int size, String sort, String keyword,
+    public Page<TourSpotListDto> searchTourSpots(int page, int size, int sort, String keyword,
                                                  String areaCode, String sigunguCode, String contentTypeId) {
-        Sort sortOrder = sort != null ? Sort.by(Sort.Direction.fromString(sort.split(",")[1]), sort.split(",")[0]) :
-                Sort.by(Sort.Direction.ASC, "title.keyword");
+        Sort sortOrder;
+        switch (sort) {
+            case 0:
+                sortOrder = Sort.by(Sort.Direction.ASC, "title");
+            case 1:
+                sortOrder = Sort.by(Sort.Direction.DESC, "title");
+            default:
+                sortOrder = Sort.by(Sort.Direction.ASC, "title");
+        }
+
+//        = sort != null ? Sort.by(Sort.Direction.fromString(sort.split(",")[1]), sort.split(",")[0]) :
+//                Sort.by(Sort.Direction.ASC, "title.keyword");
         Pageable pageable = PageRequest.of(page, size, sortOrder);
 
         BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();

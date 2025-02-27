@@ -12,9 +12,11 @@ import org.springframework.stereotype.Service;
 public class ReviewService {
     private ReviewRepository reviewRepository;
 
-    // 댓글 입력
+    // 리뷰 입력
+    // 리뷰+평점 남김 -> 게시물에 리뷰 갯수+평균 필드 추가? 이거 내일 구조 바꿔야될듯
 
-    // 댓글 수정
+
+    // 리뷰 수정
     public boolean editReview(Long reviewId, int rating, String content) {
         try {
             Review review = reviewRepository.findById(reviewId)
@@ -29,7 +31,7 @@ public class ReviewService {
         }
     }
 
-    // 댓글 삭제
+    // 리뷰 삭제
     public boolean deleteReview(Long reviewId) {
         try {
             Review review = reviewRepository.findById(reviewId)
