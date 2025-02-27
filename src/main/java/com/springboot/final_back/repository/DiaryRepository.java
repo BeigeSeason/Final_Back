@@ -3,12 +3,17 @@ package com.springboot.final_back.repository;
 import com.springboot.final_back.entity.elasticsearch.Diary;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.elasticsearch.annotations.Query;
 import org.springframework.data.elasticsearch.repository.ElasticsearchRepository;
-import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
+
+import java.util.Map;
 
 @Repository
 public interface DiaryRepository extends ElasticsearchRepository<Diary, String> {
 
     Page<Diary> findByTitle(String title, Pageable pageable);
+
+    @Query("{ \"size\": 0, \"aggs\": { \"max_id\": { \"max\": { \"field\": \"diaryId\" } } } }")
+    Map<String, Object> findLastId();
 }
