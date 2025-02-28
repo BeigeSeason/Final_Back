@@ -1,6 +1,7 @@
 package com.springboot.final_back.controller;
 
 import com.springboot.final_back.dto.DiaryReqDto;
+import com.springboot.final_back.dto.DiaryResDto;
 import com.springboot.final_back.service.DiaryService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,5 +22,8 @@ public class DiaryController {
         return new ResponseEntity<>(diaryService.createDiary(reqDto), HttpStatus.OK);
     }
 
-
+    @GetMapping("/diary-detail/{diaryId}")
+    public ResponseEntity<DiaryResDto> getDiaryDetail(@PathVariable String diaryId) {
+        return ResponseEntity.ok(diaryService.getDiaryDetail(diaryId));
+    }
 }

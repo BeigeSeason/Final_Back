@@ -1,6 +1,7 @@
 package com.springboot.final_back.service;
 
 import com.springboot.final_back.dto.DiaryReqDto;
+import com.springboot.final_back.dto.DiaryResDto;
 import com.springboot.final_back.entity.elasticsearch.Diary;
 import com.springboot.final_back.entity.mysql.Member;
 import com.springboot.final_back.repository.DiaryRepository;
@@ -55,5 +56,13 @@ public class DiaryService {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    // 다이어리 상세조회
+    public DiaryResDto getDiaryDetail(String diaryId) {
+        Diary diary = diaryRepository.findByDiaryId(diaryId).orElseThrow(() ->  new RuntimeException("Diary not found"));
+        Member member = memberRepository.findById(diary.getMemberId()).orElseThrow(() ->  new RuntimeException("Member not found"));
+        String userId = member.getUserId();
+        return DiaryResDto.fromEntity(diary, userId);
     }
 }
