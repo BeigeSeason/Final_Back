@@ -80,10 +80,6 @@ public class Diary {
     @Field(type = FieldType.Boolean, name = "is_public")
     private boolean isPublic;
 
-    @PrePersist
-    public void prePersist() {
-        createdTime = LocalDateTime.now();
-    }
 
     @Builder
     private Diary(String diaryId, String title, String region, LocalDate startDate, LocalDate endDate, Set<String> tags, Float totalCost, String content, Long memberId, boolean isPublic) {
@@ -97,5 +93,6 @@ public class Diary {
         this.content = content;
         this.memberId = memberId;
         this.isPublic = isPublic;
+        createdTime = LocalDateTime.now();
     }
 }
