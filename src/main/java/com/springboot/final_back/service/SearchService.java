@@ -1,7 +1,6 @@
 package com.springboot.final_back.service;
 
 
-import com.springboot.final_back.constant.TourConstants;
 import com.springboot.final_back.dto.search.DiarySearchListDto;
 import com.springboot.final_back.dto.search.TourSpotListDto;
 import com.springboot.final_back.dto.search.TourSpotStats;
@@ -48,7 +47,13 @@ public class SearchService {
 
     public Page<DiarySearchListDto> searchByTitle(String keyword, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
-        Page<Diary> diaryPage = diaryRepository.findByTitle(keyword, pageable);
+        Page<Diary> diaryPage;
+        if (keyword == null || keyword.isEmpty()) {
+            diaryPage = diaryRepository.findAll(pageable);
+        } else {
+            diaryPage = diaryRepository.findByTitle(keyword, pageable);
+        }
+
         if (diaryPage.isEmpty()) {
             return Page.empty();
         }
@@ -100,7 +105,7 @@ public class SearchService {
         if (contentTypeId != null) boolQuery.filter(QueryBuilders.termQuery("content_type_id", contentTypeId));
 
         Query query = new NativeSearchQueryBuilder()
-            .withQuery(boolQuery) // boolQuery 적용
+                .withQuery(boolQuery) // boolQuery 적용
                 .withPageable(pageable)
                 .build();
 
@@ -201,20 +206,4 @@ public class SearchService {
     }
 
 
-    // 비동기로 단일 관광지의 통계를 MySql 에서 가져와 Redis에 캐싱
-    @Async
-    public void cacheTourSpotStats(String tourSpotId) {
-        TourSpotStats stats = fetchStatsFromMySQL(tourSpotId);
-        String cacheKey = TourConstants.TOUR_SPOT_STATS_PREFIX + tourSpotId;
-        redisTemplate.opsForValue().set(cacheKey, stats, 1, TimeUnit.HOURS);
-    }
-
-    // 단일 관광지의 리뷰/북마크 통계를 MySQL에서 조회해 TourSpotStats로 반환.
-    private TourSpotStats fetchStatsFromMySQL(String tourSpotId) {
-        Integer reviewCount = reviewRepository.countByReviewedId(tourSpotId);
-        Double avgRating = reviewRepository.avgRatingByReviewedId(tourSpotId);
-        Integer bookmarkCount = bookmarkRepository.countByBookmarkedId(tourSpotId);
-        return new TourSpotStats(tourSpotId, reviewCount != null ? reviewCount : 0,
-                avgRating != null ? avgRating : 0.0, bookmarkCount != null ? bookmarkCount : 0);
-    }
 }

@@ -2,9 +2,11 @@ package com.springboot.final_back.service;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.springboot.final_back.constant.TourConstants;
 import com.springboot.final_back.dto.TourSpotDetailDto;
+import com.springboot.final_back.dto.search.TourSpotStats;
 import com.springboot.final_back.entity.elasticsearch.TourSpots;
-import com.springboot.final_back.repository.TourSpotsRepository;
+import com.springboot.final_back.repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -12,6 +14,8 @@ import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 import org.springframework.data.elasticsearch.core.document.Document;
 import org.springframework.data.elasticsearch.core.mapping.IndexCoordinates;
 import org.springframework.data.elasticsearch.core.query.UpdateQuery;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
@@ -25,6 +29,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Service
@@ -34,8 +39,9 @@ import java.util.stream.Collectors;
 public class TourSpotService {
     private final TourSpotsRepository tourSpotsRepository;
     private final ElasticsearchOperations elasticsearchOperations;
-    private final RestTemplate restTemplate;
-
+    private final RedisTemplate<String, TourSpotStats> redisTemplate;
+    private final ReviewRepository reviewRepository;
+    private final BookmarkRepository bookmarkRepository;
     @Value("${tour.api.service-key1}")
     private String serviceKey1;
 
@@ -191,6 +197,23 @@ public class TourSpotService {
             log.error("이미지 목록 추출 실패: {}", e.getMessage());
             return Collections.emptyList();
         }
+    }
+
+    // 비동기로 단일 관광지의 통계를 MySql 에서 가져와 Redis에 캐싱
+    @Async
+    public void cacheTourSpotStats(String tourSpotId) {
+        TourSpotStats stats = fetchStatsFromMySQL(tourSpotId);
+        String cacheKey = TourConstants.TOUR_SPOT_STATS_PREFIX + tourSpotId;
+        redisTemplate.opsForValue().set(cacheKey, stats, 1, TimeUnit.HOURS);
+    }
+
+    // 단일 관광지의 리뷰/북마크 통계를 MySQL에서 조회해 TourSpotStats로 반환.
+    private TourSpotStats fetchStatsFromMySQL(String tourSpotId) {
+        Integer reviewCount = reviewRepository.countByReviewedId(tourSpotId);
+        Double avgRating = reviewRepository.avgRatingByReviewedId(tourSpotId);
+        Integer bookmarkCount = bookmarkRepository.countByBookmarkedId(tourSpotId);
+        return new TourSpotStats(tourSpotId, reviewCount != null ? reviewCount : 0,
+                avgRating != null ? avgRating : 0.0, bookmarkCount != null ? bookmarkCount : 0);
     }
 
     private TourSpotDetailDto convertToDto(TourSpots tourSpot, TourSpots.Detail detail) {

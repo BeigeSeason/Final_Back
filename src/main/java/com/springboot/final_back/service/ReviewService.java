@@ -1,6 +1,9 @@
 package com.springboot.final_back.service;
 
+import com.springboot.final_back.dto.ReviewDto;
+import com.springboot.final_back.entity.mysql.Member;
 import com.springboot.final_back.entity.mysql.Review;
+import com.springboot.final_back.repository.MemberRepository;
 import com.springboot.final_back.repository.ReviewRepository;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -11,10 +14,26 @@ import org.springframework.stereotype.Service;
 @AllArgsConstructor
 public class ReviewService {
     private ReviewRepository reviewRepository;
+    private MemberRepository memberRepository;
+    private TourSpotService tourSpotService;
 
     // 리뷰 입력
-    // 리뷰+평점 남김 -> 게시물에 리뷰 갯수+평균 필드 추가? 이거 내일 구조 바꿔야될듯
+    public boolean createReview(ReviewDto reviewDto) {
+        try {
+            Member member = memberRepository.findByUserId(reviewDto.getMemberId()).orElseThrow(() -> new RuntimeException("존재하지 않는 사용자 Id입니다."));
+            Review review = Review.builder()
+                    .member(member)
+                    .rating(reviewDto.getRating())
+                    .reviewedId(reviewDto.getReviewedId())
+                    .content(reviewDto.getContent())
+                    .build();
 
+            reviewRepository.save(review);
+            return true;
+        } catch (RuntimeException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     // 리뷰 수정
     public boolean editReview(Long reviewId, int rating, String content) {
