@@ -62,7 +62,7 @@ public class DiaryService {
     public DiaryResDto getDiaryDetail(String diaryId) {
         Diary diary = diaryRepository.findByDiaryId(diaryId).orElseThrow(() ->  new RuntimeException("Diary not found"));
         Member member = memberRepository.findById(diary.getMemberId()).orElseThrow(() ->  new RuntimeException("Member not found"));
-        String userId = member.getUserId();
-        return DiaryResDto.fromEntity(diary, userId);
+        String nickname = member.getNickname();
+        return DiaryResDto.fromEntity(diary, nickname);
     }
 }
