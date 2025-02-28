@@ -48,7 +48,7 @@ public class Diary {
     private String region;
 
     // 작성일
-    @Field(type = FieldType.Date, format = DateFormat.basic_date_time_no_millis, name = "created_time")
+    @Field(type = FieldType.Date, format = DateFormat.date_hour_minute_second_millis, name = "created_time")
     private LocalDateTime createdTime;
 
     // 일정 시작일
