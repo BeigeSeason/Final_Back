@@ -37,6 +37,7 @@ public class MemberController {
         return memberService.checkNicknameDuplicate(nickname);
     }
 
+    // 회원 아이디 찾기
     @PostMapping("/find-id")
     public ResponseEntity<String> findMemberId(@RequestBody MemberReqDto memberReqDto) {
         String userId = memberService.findMemberId(memberReqDto.getName(), memberReqDto.getEmail());
@@ -52,5 +53,20 @@ public class MemberController {
     @GetMapping("/get-info/{userId}")
     public MemberResDto getMemberDetail(@PathVariable String userId) {
         return memberService.getMemberDetail(userId);
+    }
+
+    // 회원 비밀번호 찾기
+    @PostMapping("/find-pw")
+    public String findMemberPassword(@RequestBody MemberReqDto memberReqDto) {
+        boolean isSuccess = memberService.findMemberPassword(memberReqDto.getUserId(), memberReqDto.getEmail());
+        String password = memberService.generateTempPassword();
+        return isSuccess ? password : null;
+    }
+
+    // 회원 비밀번호 변경
+    @PutMapping("change-pw")
+    public ResponseEntity<Boolean> memberUpdatePassword(@RequestBody MemberReqDto memberReqDto) {
+        boolean isSuccess = memberService.updateMemberPassword(memberReqDto);
+        return ResponseEntity.ok(isSuccess);
     }
 }
