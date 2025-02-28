@@ -1,9 +1,12 @@
 package com.springboot.final_back.controller;
 
+import com.springboot.final_back.dto.MemberReqDto;
 import com.springboot.final_back.dto.MemberResDto;
 import com.springboot.final_back.service.MemberService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -32,6 +35,17 @@ public class MemberController {
     @PostMapping("/nicknameExists/{nickname}")
     public boolean memberNicknameDulicate(@PathVariable String nickname) {
         return memberService.checkNicknameDuplicate(nickname);
+    }
+
+    @PostMapping("/find-id")
+    public ResponseEntity<String> findMemberId(@RequestBody MemberReqDto memberReqDto) {
+        String userId = memberService.findMemberId(memberReqDto.getName(), memberReqDto.getEmail());
+
+        if (userId != null) {
+            return ResponseEntity.ok(userId);
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found.");
+        }
     }
 
     // 회원 조회
