@@ -125,6 +125,15 @@ public class TourSpots {
     @Field(type = FieldType.Nested)
     private Detail detail;
 
+    @Field(type = FieldType.Float, name = "review_count")
+    private int reviewCount;
+
+    @Field(type = FieldType.Double)
+    private double rating;
+
+    @Field(type = FieldType.Float, name = "bookmark_count")
+    private int bookmarkCount;
+
     // detail 필드는 여기서밖에 사용하지 않기 때문에 엔티티 내부에 정의함
     @Data
     public static class Detail{

@@ -1,63 +1,77 @@
 package com.springboot.final_back.service;
 
 import com.springboot.final_back.dto.ReviewDto;
+import com.springboot.final_back.entity.elasticsearch.TourSpots;
 import com.springboot.final_back.entity.mysql.Member;
 import com.springboot.final_back.entity.mysql.Review;
+import com.springboot.final_back.repository.BookmarkRepository;
 import com.springboot.final_back.repository.MemberRepository;
 import com.springboot.final_back.repository.ReviewRepository;
+import com.springboot.final_back.repository.TourSpotsRepository;
 import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-@Slf4j
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class ReviewService {
-    private ReviewRepository reviewRepository;
-    private MemberRepository memberRepository;
+    private final ReviewRepository reviewRepository;
+    private final TourSpotsRepository tourSpotsRepository;
+    private final ElasticsearchOperations elasticsearchOperations;
+    private final BookmarkRepository bookmarkRepository;
+    private final MemberRepository memberRepository;
 
-    // 리뷰 입력
-    public boolean createReview(ReviewDto reviewDto) {
-        try {
-            Member member = memberRepository.findByUserId(reviewDto.getMemberId()).orElseThrow(() -> new RuntimeException("존재하지 않는 사용자 Id입니다."));
-            Review review = Review.builder()
-                    .member(member)
-                    .rating(reviewDto.getRating())
-                    .tourSpotId(reviewDto.getTourSpotId())
-                    .content(reviewDto.getContent())
-                    .build();
+    // 리뷰 작성
+    @Transactional
+    public ReviewDto addReview(ReviewDto reviewDto) {
+        Member member = memberRepository.findByUserId(reviewDto.getMemberId())
+                .orElseThrow(() -> new RuntimeException("존재하지 않는 사용자"));
 
-            reviewRepository.save(review);
-            return true;
-        } catch (RuntimeException e) {
-            throw new RuntimeException(e);
-        }
+        Review review = Review.builder()
+                .member(member)
+                .rating(reviewDto.getRating())
+                .tourSpotId(reviewDto.getTourSpotId())
+                .content(reviewDto.getContent())
+                .build();
+        reviewRepository.save(review);
+        updateTourSpotStats(reviewDto.getTourSpotId());
+        return reviewDto;
     }
 
     // 리뷰 수정
-    public boolean editReview(Long reviewId, int rating, String content) {
-        try {
-            Review review = reviewRepository.findById(reviewId)
-                    .orElseThrow(() -> new RuntimeException("해당 댓글을 찾을 수 없습니다."));
-            review.setRating(rating);
-            review.setContent(content);
-            reviewRepository.save(review);
-            return true;
-        } catch (Exception e) {
-            log.info("댓글 수정 오류: {}", e.getMessage());
-            return false;
-        }
+    @Transactional
+    public void updateReview(Long reviewId, ReviewDto reviewDto) {
+        Review review = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> new RuntimeException("Review not found"));
+        review.setRating(reviewDto.getRating());
+        review.setContent(reviewDto.getContent());
+        reviewRepository.save(review);
+        updateTourSpotStats(review.getTourSpotId());
     }
 
     // 리뷰 삭제
-    public boolean deleteReview(Long reviewId) {
-        try {
-            Review review = reviewRepository.findById(reviewId)
-                    .orElseThrow(() -> new RuntimeException("해당 댓글을 찾을 수 없습니다."));
-            reviewRepository.delete(review);
-            return true;
-        } catch (Exception e) {
-            throw new RuntimeException("댓글 삭제 오류: {}", e);
-        }
+    @Transactional
+    public void deleteReview(Long reviewId) {
+        Review review = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> new RuntimeException("Review not found"));
+        String tourSpotId = review.getTourSpotId();
+        reviewRepository.delete(review);
+        updateTourSpotStats(tourSpotId);
+    }
+
+    // 리뷰 적용 시 도큐먼트 업데이트
+    private void updateTourSpotStats(String tourSpotId) {
+        TourSpots tourSpot = tourSpotsRepository.findByContentId(tourSpotId)
+                .orElseThrow(() -> new RuntimeException("TourSpot not found"));
+        Integer reviewCount = reviewRepository.countByTourSpotId(tourSpotId);
+        Double avgRating = reviewRepository.avgRatingByTourSpotId(tourSpotId);
+        Integer bookmarkCount = bookmarkRepository.countByBookmarkedId(tourSpotId);
+        tourSpot.setReviewCount(reviewCount != null ? reviewCount : 0);
+        tourSpot.setRating(avgRating != null ? avgRating : 0.0);
+        tourSpot.setBookmarkCount(bookmarkCount != null ? bookmarkCount : 0);
+        tourSpotsRepository.save(tourSpot);
     }
 }
