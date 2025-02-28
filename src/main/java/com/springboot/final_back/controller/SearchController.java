@@ -1,6 +1,7 @@
 package com.springboot.final_back.controller;
 
 import com.springboot.final_back.dto.TourSpotDetailDto;
+import com.springboot.final_back.dto.search.DiarySearchListDto;
 import com.springboot.final_back.dto.search.TourSpotListDto;
 import com.springboot.final_back.service.SearchService;
 import com.springboot.final_back.service.TourSpotService;
@@ -19,6 +20,13 @@ import org.springframework.web.bind.annotation.*;
 public class SearchController {
     private final SearchService searchService;
     private final TourSpotService tourSpotService;
+
+    @GetMapping("/diary-list")
+    public ResponseEntity<Page<DiarySearchListDto>> getDiaryList(@RequestParam int page,
+                                                           @RequestParam int size,
+                                                           @RequestParam String keyword) {
+        return new ResponseEntity<>(searchService.searchByTitle(keyword, page, size), HttpStatus.OK);
+    }
 
     @GetMapping("/tour-list")
     public ResponseEntity<Page<TourSpotListDto>> findTourSpotList(@RequestParam(defaultValue = "0") int page,
