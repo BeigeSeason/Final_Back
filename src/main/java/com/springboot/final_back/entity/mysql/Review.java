@@ -24,7 +24,7 @@ public class Review {
     private int rating;
 
     @Column(nullable = false)
-    private Long reviewedId;
+    private String reviewedId;
 
     private String content;
 
@@ -36,7 +36,7 @@ public class Review {
     }
 
     @Builder
-    private Review(Member member, int rating, Long reviewedId, String content) {
+    private Review(Member member, int rating, String reviewedId, String content) {
         this.member = member;
         this.rating = rating;
         this.reviewedId = reviewedId;
