@@ -45,7 +45,7 @@ public class MemberService {
     // 회원 비밀번호 수정
     public boolean updateMemberPassword(MemberReqDto memberReqDto) {
         try {
-            Member member = memberRepository.findById(Long.valueOf(memberReqDto.getUserId())).orElseThrow(() -> new RuntimeException("해당 회원이 존재하지 않습니다."));
+            Member member = memberRepository.findByUserId(memberReqDto.getUserId()).orElseThrow(() -> new RuntimeException("해당 회원이 존재하지 않습니다."));
             member.setPassword(memberReqDto.getPassword());
 
             memberRepository.save(member);
@@ -79,8 +79,8 @@ public class MemberService {
     }
 
     // 회원 비밀번호 찾기
-    public boolean findMemberPassword(String id, String email) {
-        Member member = memberRepository.findByIdAndEmail(id, email)
+    public boolean findMemberPassword(String userId, String email) {
+        Member member = memberRepository.findByUserIdAndEmail(userId, email)
                 .orElseThrow(() -> new RuntimeException("해당 회원이 존재하지 않습니다."));
         return member != null;
     }
