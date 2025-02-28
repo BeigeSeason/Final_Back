@@ -7,6 +7,7 @@ import org.springframework.data.elasticsearch.annotations.*;
 
 
 import javax.persistence.PrePersist;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Set;
 
@@ -52,11 +53,11 @@ public class Diary {
 
     // 일정 시작일
     @Field(type = FieldType.Date, format = DateFormat.basic_date)
-    private LocalDateTime startDate;
+    private LocalDate startDate;
 
     // 일정 종료일
     @Field(type = FieldType.Date, format = DateFormat.basic_date)
-    private LocalDateTime endDate;
+    private LocalDate endDate;
 
     // 태그(Set 으로 중복 제거)
     @Field(type = FieldType.Keyword)
@@ -85,7 +86,7 @@ public class Diary {
     }
 
     @Builder
-    private Diary(String diaryId, String title, String region, LocalDateTime startDate, LocalDateTime endDate, Set<String> tags, Float totalCost, String content, Long memberId, boolean isPublic) {
+    private Diary(String diaryId, String title, String region, LocalDate startDate, LocalDate endDate, Set<String> tags, Float totalCost, String content, Long memberId, boolean isPublic) {
         this.diaryId = diaryId;
         this.title = title;
         this.region = region;
