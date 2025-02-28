@@ -22,5 +22,5 @@ public class Bookmark {
 
     private Type type;
 
-    private Long bookmarkedId;
+    private String bookmarkedId;
 }

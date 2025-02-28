@@ -1,7 +1,12 @@
 package com.springboot.final_back.config;
 
+import com.springboot.final_back.dto.search.TourSpotStats;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
+import org.springframework.data.redis.serializer.StringRedisSerializer;
 import org.springframework.http.MediaType;
 import org.springframework.web.client.RestTemplate;
 
@@ -21,4 +26,14 @@ public class AppConfig {
         });
         return restTemplate;
     }
+
+    @Bean
+    public RedisTemplate<String, TourSpotStats> redisTemplate(RedisConnectionFactory factory) {
+        RedisTemplate<String, TourSpotStats> template = new RedisTemplate<>();
+        template.setConnectionFactory(factory);
+        template.setValueSerializer(new Jackson2JsonRedisSerializer<>(TourSpotStats.class));
+        template.setKeySerializer(new StringRedisSerializer());
+        return template;
+    }
+
 }

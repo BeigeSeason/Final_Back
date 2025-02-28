@@ -6,6 +6,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.elasticsearch.repository.ElasticsearchRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -13,4 +14,6 @@ public interface TourSpotsRepository extends ElasticsearchRepository<TourSpots, 
     Page<TourSpots> findByTitleOrAddr1(String title, String addr1, Pageable pageable);
 
     Optional<TourSpots> findByContentId(String contentId);
+
+    List<String> findAllContentIds();
 }
