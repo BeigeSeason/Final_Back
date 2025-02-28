@@ -15,7 +15,6 @@ import org.springframework.stereotype.Service;
 public class ReviewService {
     private ReviewRepository reviewRepository;
     private MemberRepository memberRepository;
-    private TourSpotService tourSpotService;
 
     // 리뷰 입력
     public boolean createReview(ReviewDto reviewDto) {
@@ -24,7 +23,7 @@ public class ReviewService {
             Review review = Review.builder()
                     .member(member)
                     .rating(reviewDto.getRating())
-                    .reviewedId(reviewDto.getReviewedId())
+                    .tourSpotId(reviewDto.getTourSpotId())
                     .content(reviewDto.getContent())
                     .build();
 

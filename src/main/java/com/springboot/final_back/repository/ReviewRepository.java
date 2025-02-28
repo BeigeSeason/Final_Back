@@ -1,6 +1,7 @@
 package com.springboot.final_back.repository;
 
 import com.springboot.final_back.entity.mysql.Review;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -11,12 +12,14 @@ import java.util.Optional;
 
 @Repository
 public interface ReviewRepository extends JpaRepository<Review, Long> {
-    Optional<Review> findById(Long id);
+    @NotNull Optional<Review> findById(@NotNull Long id);
 
-    @Query("SELECT r.reviewedId, COUNT(r), AVG(r.rating) FROM Review r WHERE r.reviewedId IN :ids GROUP BY r.reviewedId")
+    @Query("SELECT r.tourSpotId, COUNT(r), AVG(r.rating) FROM Review r WHERE r.tourSpotId IN :ids GROUP BY r.tourSpotId")
     List<Object[]> findStatsByTourSpotIds(@Param("ids") List<String> tourSpotIds);
 
-    Integer countByReviewedId(String tourSpotId);
+    @Query("SELECT COUNT(r) FROM Review r WHERE r.tourSpotId = :tourSpotId")
+    Integer countByTourSpotId(@Param("tourSpotId") String tourSpotId);
 
-    Double avgRatingByReviewedId(String tourSpotId);
+    @Query("SELECT AVG(r.rating) FROM Review r WHERE r.tourSpotId = :tourSpotId")
+    Double avgRatingByTourSpotId(@Param("tourSpotId") String tourSpotId);
 }

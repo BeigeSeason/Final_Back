@@ -45,6 +45,7 @@ public class SearchService {
     private final ReviewRepository reviewRepository;
     private final BookmarkRepository bookmarkRepository;
 
+    // 다이어리 검색
     public Page<DiarySearchListDto> searchByTitle(String keyword, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
         Page<Diary> diaryPage;

@@ -199,8 +199,6 @@ public class TourSpotService {
         }
     }
 
-    // 비동기로 단일 관광지의 통계를 MySql 에서 가져와 Redis에 캐싱
-    @Async
     public void cacheTourSpotStats(String tourSpotId) {
         TourSpotStats stats = fetchStatsFromMySQL(tourSpotId);
         String cacheKey = TourConstants.TOUR_SPOT_STATS_PREFIX + tourSpotId;
@@ -209,8 +207,8 @@ public class TourSpotService {
 
     // 단일 관광지의 리뷰/북마크 통계를 MySQL에서 조회해 TourSpotStats로 반환.
     private TourSpotStats fetchStatsFromMySQL(String tourSpotId) {
-        Integer reviewCount = reviewRepository.countByReviewedId(tourSpotId);
-        Double avgRating = reviewRepository.avgRatingByReviewedId(tourSpotId);
+        Integer reviewCount = reviewRepository.countByTourSpotId(tourSpotId);
+        Double avgRating = reviewRepository.avgRatingByTourSpotId(tourSpotId);
         Integer bookmarkCount = bookmarkRepository.countByBookmarkedId(tourSpotId);
         return new TourSpotStats(tourSpotId, reviewCount != null ? reviewCount : 0,
                 avgRating != null ? avgRating : 0.0, bookmarkCount != null ? bookmarkCount : 0);

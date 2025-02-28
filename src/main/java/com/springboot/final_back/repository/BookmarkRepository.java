@@ -11,9 +11,9 @@ import java.util.List;
 @Repository
 public interface BookmarkRepository extends JpaRepository<Bookmark, Long> {
 
+    @Query("SELECT COUNT(b) FROM Bookmark b WHERE b.bookmarkedId = :tourSpotId")
+    Integer countByBookmarkedId(@Param("tourSpotId") String tourSpotId);
+
     @Query("SELECT b.bookmarkedId, COUNT(b) FROM Bookmark b WHERE b.bookmarkedId IN :ids GROUP BY b.bookmarkedId")
     List<Object[]> findBookmarkCountsByTourSpotIds(@Param("ids") List<String> tourSpotIds);
-
-
-    Integer countByBookmarkedId(String bookmarkedId);
 }

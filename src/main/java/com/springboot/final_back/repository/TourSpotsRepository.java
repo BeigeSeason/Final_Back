@@ -3,6 +3,7 @@ package com.springboot.final_back.repository;
 import com.springboot.final_back.entity.elasticsearch.TourSpots;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.elasticsearch.annotations.Query;
 import org.springframework.data.elasticsearch.repository.ElasticsearchRepository;
 import org.springframework.stereotype.Repository;
 
@@ -15,5 +16,6 @@ public interface TourSpotsRepository extends ElasticsearchRepository<TourSpots, 
 
     Optional<TourSpots> findByContentId(String contentId);
 
+    @Query("{\"match_all\": {}}")
     List<String> findAllContentIds();
 }
