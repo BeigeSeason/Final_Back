@@ -50,4 +50,11 @@ public class MemberService {
     public boolean checkNicknameDuplicate(String nickname) {
         return memberRepository.existsByNickname(nickname);
     }
+
+    // 회원 아이디 찾기
+    public String findMemberId(String name, String email) {
+        Member member = memberRepository.findByNameAndEmail(name, email)
+                .orElseThrow(() -> new RuntimeException("해당 회원이 존재하지 않습니다."));
+        return member != null ? member.getUserId() : null;
+    }
 }
