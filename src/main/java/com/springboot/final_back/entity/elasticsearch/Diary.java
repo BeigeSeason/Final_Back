@@ -35,7 +35,7 @@ public class Diary {
     private String title;
 
     // 사용자 아이디(Long)
-    @Field(type = FieldType.Keyword)
+    @Field(type = FieldType.Keyword, name = "member_id")
     private Long memberId;
 
     // 지역(코드 대신 직접 텍스트로)
@@ -48,15 +48,15 @@ public class Diary {
     private String region;
 
     // 작성일
-    @Field(type = FieldType.Date, format = DateFormat.basic_date_time_no_millis)
+    @Field(type = FieldType.Date, format = DateFormat.basic_date_time_no_millis, name = "created_time")
     private LocalDateTime createdTime;
 
     // 일정 시작일
-    @Field(type = FieldType.Date, format = DateFormat.basic_date)
+    @Field(type = FieldType.Date, format = DateFormat.basic_date, name = "start_time")
     private LocalDate startDate;
 
     // 일정 종료일
-    @Field(type = FieldType.Date, format = DateFormat.basic_date)
+    @Field(type = FieldType.Date, format = DateFormat.basic_date, name = "end_date")
     private LocalDate endDate;
 
     // 태그(Set 으로 중복 제거)
@@ -64,7 +64,7 @@ public class Diary {
     private Set<String> tags;
 
     // 여행경비
-    @Field(type = FieldType.Float)
+    @Field(type = FieldType.Float, name = "total_cost")
     private Float totalCost;
 
     // 내용
