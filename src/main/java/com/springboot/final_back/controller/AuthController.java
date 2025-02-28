@@ -27,5 +27,11 @@ public class AuthController {
         return ResponseEntity.ok(authService.login(loginDto));
     }
 
+    // 토큰 재발급
+    @PostMapping("/token-refreshing")
+    public ResponseEntity<String> refreshingAccessToken(@RequestBody String refreshToken) {
+        return ResponseEntity.ok(authService.refreshAccessToken(refreshToken));
+    }
+
     // 내 정보 수정
 }
