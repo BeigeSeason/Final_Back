@@ -55,6 +55,12 @@ public class MemberController {
         return memberService.getMemberDetail(userId);
     }
 
+    // 회원 비밀번호 확인
+    @PutMapping("/check-pw")
+    public Boolean cheackMemberPassword(@RequestBody MemberReqDto memberReqDto) {
+        return memberService.cheackMemberPassword(memberReqDto);
+    }
+
     // 회원 비밀번호 찾기
     @PostMapping("/find-pw")
     public String findMemberPassword(@RequestBody MemberReqDto memberReqDto) {

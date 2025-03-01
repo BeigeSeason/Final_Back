@@ -1,9 +1,6 @@
 package com.springboot.final_back.service;
 
-import com.springboot.final_back.dto.LoginDto;
-import com.springboot.final_back.dto.MemberResDto;
-import com.springboot.final_back.dto.SignupDto;
-import com.springboot.final_back.dto.TokenDto;
+import com.springboot.final_back.dto.*;
 import com.springboot.final_back.entity.mysql.Member;
 import com.springboot.final_back.entity.mysql.RefreshToken;
 import com.springboot.final_back.exception.NotMemberException;
@@ -36,6 +33,7 @@ public class AuthService {
     private final TokenProvider tokenProvider;
 
     // 회원가입
+    @Transactional
     public boolean signUp(SignupDto signupDto) {
         try{
             if(memberRepository.existsMemberByUserId(signupDto.getUserId())){
@@ -105,4 +103,18 @@ public class AuthService {
         }
     }
 
+    // 내 정보 수정
+    @Transactional
+    public boolean updateMember(MemberReqDto memberReqDto) {
+        try{
+            Member member = memberRepository.findByUserId(memberReqDto.getUserId()).orElseThrow(() ->  new RuntimeException("Member not found"));
+            member.setName(memberReqDto.getName());
+            member.setNickname(memberReqDto.getNickname());
+            memberRepository.save(member);
+            return true;
+        } catch (Exception e) {
+            log.error("회원정보 수정 오류 : {}", e.getMessage());
+            return false;
+        }
+    }
 }

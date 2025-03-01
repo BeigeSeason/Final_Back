@@ -9,6 +9,7 @@ import com.springboot.final_back.repository.MemberRepository;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Map;
 
@@ -20,6 +21,7 @@ public class DiaryService {
     private MemberRepository memberRepository;
 
     // 다이어리 생성
+    @Transactional
     public boolean createDiary(DiaryReqDto dto) {
         try{
             Member member = memberRepository.findByUserId(dto.getUserId()).orElseThrow(()-> new RuntimeException("Member not found"));
@@ -47,6 +49,7 @@ public class DiaryService {
     }
 
     // 다이어리 삭제
+    @Transactional
     public boolean deleteDiary(String diaryId) {
         try {
             Diary diary = diaryRepository.findById(diaryId)

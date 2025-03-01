@@ -6,6 +6,7 @@ import com.springboot.final_back.entity.mysql.Member;
 import com.springboot.final_back.repository.MemberRepository;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.security.SecureRandom;
@@ -18,6 +19,7 @@ import java.util.List;
 @AllArgsConstructor
 public class MemberService {
     private final MemberRepository memberRepository;
+    private PasswordEncoder passwordEncoder;
 
     // 회원 상세 조회
     public MemberResDto getMemberDetail(String userId) {
@@ -42,11 +44,27 @@ public class MemberService {
         }
     }
 
+    // 회원 비밀번호 확인
+    public boolean cheackMemberPassword(MemberReqDto memberReqDto) {
+        try{
+            Member member = memberRepository.findByUserId((memberReqDto.getUserId())).orElseThrow(() -> new RuntimeException("해당 회원이 존재하지 않습니다."));
+            if (!passwordEncoder.matches(memberReqDto.getPassword(), member.getPassword())) {
+                return false;
+            }
+        } catch (Error e) {
+            log.error("비밀번호 확인 중 오류 : {}", e.getMessage());
+        }
+        return true;
+    }
+
     // 회원 비밀번호 수정
     public boolean updateMemberPassword(MemberReqDto memberReqDto) {
         try {
             Member member = memberRepository.findByUserId(memberReqDto.getUserId()).orElseThrow(() -> new RuntimeException("해당 회원이 존재하지 않습니다."));
-            member.setPassword(memberReqDto.getPassword());
+            log.error(memberReqDto.getPassword());
+            // 비밀번호 암호화
+            String encodedPassword = passwordEncoder.encode(memberReqDto.getPassword());
+            member.setPassword(encodedPassword);
 
             memberRepository.save(member);
             return true;

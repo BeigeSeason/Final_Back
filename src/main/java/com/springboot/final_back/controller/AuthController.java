@@ -1,6 +1,7 @@
 package com.springboot.final_back.controller;
 
 import com.springboot.final_back.dto.LoginDto;
+import com.springboot.final_back.dto.MemberReqDto;
 import com.springboot.final_back.dto.SignupDto;
 import com.springboot.final_back.dto.TokenDto;
 import com.springboot.final_back.service.AuthService;
@@ -34,4 +35,8 @@ public class AuthController {
     }
 
     // 내 정보 수정
+    @PutMapping("/update")
+    public ResponseEntity<Boolean> updateMember(@RequestBody MemberReqDto memberReqDto) {
+        return ResponseEntity.ok(authService.updateMember(memberReqDto));
+    }
 }
