@@ -74,6 +74,19 @@ public class MemberService {
         }
     }
 
+    // 회원 프로필 변경
+    public boolean updateMemberProfile(MemberReqDto memberReqDto) {
+        try{
+            Member member = memberRepository.findByUserId(memberReqDto.getUserId()).orElseThrow(() -> new RuntimeException("해당 회원이 존재하지 않습니다."));
+            member.setImgPath(memberReqDto.getImgPath());
+            memberRepository.save(member);
+            return true;
+        }catch (Exception e) {
+            log.error("프로필 변경: {}", e.getMessage());
+            return false;
+        }
+    }
+
     // 회원 아이디 중복 확인
     public boolean checkIdDuplicate(String userId) {
         return memberRepository.existsByUserId(userId);

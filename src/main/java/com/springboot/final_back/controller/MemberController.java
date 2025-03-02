@@ -2,6 +2,7 @@ package com.springboot.final_back.controller;
 
 import com.springboot.final_back.dto.MemberReqDto;
 import com.springboot.final_back.dto.MemberResDto;
+import com.springboot.final_back.entity.mysql.Member;
 import com.springboot.final_back.service.MemberService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -74,5 +75,11 @@ public class MemberController {
     public ResponseEntity<Boolean> memberUpdatePassword(@RequestBody MemberReqDto memberReqDto) {
         boolean isSuccess = memberService.updateMemberPassword(memberReqDto);
         return ResponseEntity.ok(isSuccess);
+    }
+
+    // 회원 프로필 변경
+    @PutMapping("change-profile")
+    public ResponseEntity<Boolean> updateMemberProfile(@RequestBody MemberReqDto memberReqDto) {
+        return ResponseEntity.ok(memberService.updateMemberProfile(memberReqDto));
     }
 }
