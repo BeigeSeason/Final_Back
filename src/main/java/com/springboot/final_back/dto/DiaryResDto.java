@@ -24,9 +24,10 @@ public class DiaryResDto {
     private Float totalCost;      // 여행 경비
     private String content;     // 내용
     private String nickname;
+    private String profileImgPath;
     private boolean isPublic;
 
-    public static DiaryResDto fromEntity(Diary diary, String nickname) {
+    public static DiaryResDto fromEntity(Diary diary, String nickname, String imgPath) {
         return DiaryResDto.builder()
                 .diaryId(diary.getDiaryId())
                 .title(diary.getTitle())
@@ -39,6 +40,7 @@ public class DiaryResDto {
                 .content(diary.getContent())
                 .isPublic(diary.isPublic())
                 .nickname(nickname)
+                .profileImgPath(imgPath)
                 .build();
     }
 }

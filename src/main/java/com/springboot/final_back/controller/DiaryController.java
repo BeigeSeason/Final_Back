@@ -22,8 +22,19 @@ public class DiaryController {
         return new ResponseEntity<>(diaryService.createDiary(reqDto), HttpStatus.OK);
     }
 
+    @DeleteMapping("/delete/{diaryId}")
+    public ResponseEntity<Boolean> deleteDiary(@PathVariable String diaryId) {
+        return ResponseEntity.ok(diaryService.deleteDiary(diaryId));
+    }
+
     @GetMapping("/diary-detail/{diaryId}")
     public ResponseEntity<DiaryResDto> getDiaryDetail(@PathVariable String diaryId) {
         return ResponseEntity.ok(diaryService.getDiaryDetail(diaryId));
+    }
+
+    // 다이어리 공개/비공개 전환
+    @PutMapping("/change-ispublic")
+    public ResponseEntity<Boolean> changeIsPublic(@RequestParam String diaryId, @RequestParam boolean isPublic) {
+        return ResponseEntity.ok(diaryService.changeIsPublic(diaryId, isPublic));
     }
 }

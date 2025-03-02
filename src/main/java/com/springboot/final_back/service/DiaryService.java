@@ -52,7 +52,7 @@ public class DiaryService {
     @Transactional
     public boolean deleteDiary(String diaryId) {
         try {
-            Diary diary = diaryRepository.findById(diaryId)
+            Diary diary = diaryRepository.findByDiaryId(diaryId)
                     .orElseThrow(() -> new RuntimeException("해당 일기를 찾을 수 없습니다."));
             diaryRepository.delete(diary);
             return true;
@@ -66,6 +66,21 @@ public class DiaryService {
         Diary diary = diaryRepository.findByDiaryId(diaryId).orElseThrow(() ->  new RuntimeException("Diary not found"));
         Member member = memberRepository.findById(diary.getMemberId()).orElseThrow(() ->  new RuntimeException("Member not found"));
         String nickname = member.getNickname();
-        return DiaryResDto.fromEntity(diary, nickname);
+        String imgPath = member.getImgPath();
+        return DiaryResDto.fromEntity(diary, nickname, imgPath);
+    }
+
+    // 다이어리 공개/비공개 전환
+    @Transactional
+    public boolean changeIsPublic(String diaryId, boolean isPublic) {
+        try {
+            Diary diary = diaryRepository.findByDiaryId(diaryId).orElseThrow(() -> new RuntimeException("Diary not found"));
+            diary.setPublic(isPublic);
+            diaryRepository.save(diary);
+            return true;
+        } catch (Exception e) {
+            log.error("다이어리 공개/비공개 변경 중 에러: {}", e.getMessage());
+            return false;
+        }
     }
 }
