@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 public class DiarySearchListDto {
+    private String diaryId; // 다이어리 아이디
     private String title; // 제목
     private String contentSummary; // 내용 요약
     private String thumbnail; // 썸네일

@@ -78,6 +78,7 @@ public class SearchService {
                 .map(diary -> {
                     Member author = memberMap.get(diary.getMemberId());
                     return DiarySearchListDto.builder()
+                            .diaryId(diary.getDiaryId())
                             .title(diary.getTitle())
                             .contentSummary(diary.getContent().length() > 150 ? diary.getContent().substring(0, 150) + "..." : diary.getContent())
                             .thumbnail(null)
