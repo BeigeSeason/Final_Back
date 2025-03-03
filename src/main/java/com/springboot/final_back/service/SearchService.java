@@ -1,5 +1,3 @@
-
-
 package com.springboot.final_back.service;
 
 
@@ -43,25 +41,45 @@ public class SearchService {
 
     public Page<DiarySearchListDto> searchByTitle(String keyword, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
-        Page<Diary> diaryPage = diaryRepository.findByTitle(keyword, pageable);
+        Page<Diary> diaryPage;
+
+        if (keyword == null || keyword.isEmpty()) {
+            // keyword 없으면 전체 조회
+            Query query = new NativeSearchQueryBuilder()
+                    .withQuery(QueryBuilders.matchAllQuery())
+                    .withPageable(pageable)
+                    .build();
+            SearchHits<Diary> searchHits = elasticsearchOperations.search(query, Diary.class);
+            diaryPage = new PageImpl<>(
+                    searchHits.getSearchHits().stream().map(SearchHit::getContent).collect(Collectors.toList()),
+                    pageable,
+                    searchHits.getTotalHits()
+            );
+        } else {
+            // keyword 있으면 제목 검색
+            diaryPage = diaryRepository.findByTitle(keyword, pageable);
+        }
+
         if (diaryPage.isEmpty()) {
-            return Page.empty();
+            log.debug("No diaries found for keyword: {}", keyword);
+            return Page.empty(pageable);
         }
 
         List<Long> memberIdList = diaryPage.getContent().stream()
-                .map(Diary::getMemberId).toList();
+                .map(Diary::getMemberId)
+                .toList();
 
         List<Member> memberList = memberRepository.findByIdIn(memberIdList);
 
         Map<Long, Member> memberMap = memberList.stream()
-                .collect(Collectors.toMap(Member::getId, member -> member)); // memberId를 키로 하는 Map 생성
+                .collect(Collectors.toMap(Member::getId, member -> member));
 
         List<DiarySearchListDto> dtoList = diaryPage.getContent().stream()
                 .map(diary -> {
-                    Member author = memberMap.get(diary.getMemberId()); // memberId로 작성자 정보 조회
+                    Member author = memberMap.get(diary.getMemberId());
                     return DiarySearchListDto.builder()
-                            .title(diary.getTitle()) // 다이어리 정보
-                            .contentSummary(diary.getContent().length() > 150 ? diary.getContent().substring(0, 150) + "..." : diary.getContent()) // 150자가 넘어가면 150자만 보여주기
+                            .title(diary.getTitle())
+                            .contentSummary(diary.getContent().length() > 150 ? diary.getContent().substring(0, 150) + "..." : diary.getContent())
                             .thumbnail(null)
                             .writer(author.getNickname())
                             .writerImg(author.getImgPath() != null ? author.getImgPath() : null)
@@ -75,23 +93,26 @@ public class SearchService {
 
     public Page<TourSpotListDto> searchTourSpots(int page, int size, String sort, String keyword,
                                                  String areaCode, String sigunguCode, String contentTypeId) {
-        Sort sortOrder = sort != null ? Sort.by(Sort.Direction.fromString(sort.split(",")[1]), sort.split(",")[0]) :
+
+        Sort sortOrder = sort != null && !sort.isEmpty() ?
+                Sort.by(Sort.Direction.fromString(sort.split(",")[1]), sort.split(",")[0]) :
                 Sort.by(Sort.Direction.ASC, "title.keyword");
         Pageable pageable = PageRequest.of(page, size, sortOrder);
 
         BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
-
-        // 검색어 처리
-        if (keyword != null && !keyword.isEmpty()) {
-            boolQuery.must(QueryBuilders.multiMatchQuery(keyword, "title", "addr1"));
-        } else {
+        // 기본값 전체 조회 명시
+        boolean hasFilters = keyword != null || areaCode != null || sigunguCode != null || contentTypeId != null;
+        if (!hasFilters) {
+            log.debug("No filters provided, performing full search");
             boolQuery.must(QueryBuilders.matchAllQuery());
+        } else {
+            if (keyword != null && !keyword.isEmpty()) {
+                boolQuery.must(QueryBuilders.multiMatchQuery(keyword, "title", "addr1"));
+            }
+            if (areaCode != null) boolQuery.filter(QueryBuilders.termQuery("area_code", areaCode));
+            if (sigunguCode != null) boolQuery.filter(QueryBuilders.termQuery("sigungu_code", sigunguCode));
+            if (contentTypeId != null) boolQuery.filter(QueryBuilders.termQuery("content_type_id", contentTypeId));
         }
-
-        // 필터링
-        if (areaCode != null) boolQuery.filter(QueryBuilders.termQuery("area_code", areaCode));
-        if (sigunguCode != null) boolQuery.filter(QueryBuilders.termQuery("sigungu_code", sigunguCode));
-        if (contentTypeId != null) boolQuery.filter(QueryBuilders.termQuery("content_type_id", contentTypeId));
 
         Query query = new NativeSearchQueryBuilder()
                 .withQuery(boolQuery)

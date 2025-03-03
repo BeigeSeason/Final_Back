@@ -22,9 +22,9 @@ public class SearchController {
     private final TourSpotService tourSpotService;
 
     @GetMapping("/diary-list")
-    public ResponseEntity<Page<DiarySearchListDto>> getDiaryList(@RequestParam int page,
-                                                           @RequestParam int size,
-                                                           @RequestParam String keyword) {
+    public ResponseEntity<Page<DiarySearchListDto>> getDiaryList(@RequestParam(defaultValue = "0") int page,
+                                                           @RequestParam(defaultValue = "20") int size,
+                                                           @RequestParam(required = false) String keyword) {
         return new ResponseEntity<>(searchService.searchByTitle(keyword, page, size), HttpStatus.OK);
     }
 
