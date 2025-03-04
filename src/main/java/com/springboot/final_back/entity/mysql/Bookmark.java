@@ -20,7 +20,7 @@ public class Bookmark {
     @JoinColumn(name = "member")
     private Member member;
 
-    private Type type;
+    private Type type; // MEMBER, DIARY, REVIEW, TOURSPOT
 
     private String bookmarkedId;
 }

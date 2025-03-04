@@ -1,5 +1,6 @@
 package com.springboot.final_back.service;
 
+import com.springboot.final_back.constant.Type;
 import com.springboot.final_back.entity.elasticsearch.TourSpots;
 import com.springboot.final_back.entity.mysql.Bookmark;
 import com.springboot.final_back.entity.mysql.Member;
@@ -20,14 +21,15 @@ public class BookmarkService {
     private final MemberRepository memberRepository;
 
     @Transactional
-    public void addBookmark(String tourSpotId, String memberId) {
-        Member member = memberRepository.findByUserId(memberId)
+    public void addBookmark(String targetId, String userId, Type type) {
+        Member member = memberRepository.findByUserId(userId)
                 .orElseThrow(() -> new RuntimeException("존재하지 않는 사용자"));
         Bookmark bookmark = new Bookmark();
-        bookmark.setBookmarkedId(tourSpotId);
+        bookmark.setType(type);
+        bookmark.setBookmarkedId(targetId);
         bookmark.setMember(member);
         bookmarkRepository.save(bookmark);
-        updateTourSpotStats(tourSpotId);
+        updateTourSpotStats(targetId);
     }
 
     @Transactional
