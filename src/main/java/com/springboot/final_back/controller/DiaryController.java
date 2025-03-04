@@ -22,6 +22,11 @@ public class DiaryController {
         return new ResponseEntity<>(diaryService.createDiary(reqDto), HttpStatus.OK);
     }
 
+    @PutMapping("/edit-diary")
+    public ResponseEntity<Boolean> editDiary(@RequestBody DiaryReqDto reqDto) {
+        return ResponseEntity.ok(diaryService.editDiary(reqDto));
+    }
+
     @DeleteMapping("/delete/{diaryId}")
     public ResponseEntity<Boolean> deleteDiary(@PathVariable String diaryId) {
         return ResponseEntity.ok(diaryService.deleteDiary(diaryId));

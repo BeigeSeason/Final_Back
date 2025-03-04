@@ -48,6 +48,28 @@ public class DiaryService {
         }
     }
 
+    // 다이어리 수정
+    @Transactional
+    public boolean editDiary (DiaryReqDto diaryReqDto) {
+        try{
+            Diary diary = diaryRepository.findByDiaryId(diaryReqDto.getDiaryId())
+                    .orElseThrow(() -> new RuntimeException("해당 일기를 찾을 수 없습니다."));
+            diary.setTitle(diaryReqDto.getTitle());
+            diary.setRegion(diaryReqDto.getRegion());
+            diary.setStartDate(diaryReqDto.getStartDate());
+            diary.setEndDate(diaryReqDto.getEndDate());
+            diary.setTags(diaryReqDto.getTags());
+            diary.setTotalCost(diaryReqDto.getTotalCost());
+            diary.setContent(diaryReqDto.getContent());
+            diary.setPublic(diaryReqDto.isPublic());
+
+            diaryRepository.save(diary);
+            return true;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     // 다이어리 삭제
     @Transactional
     public boolean deleteDiary(String diaryId) {

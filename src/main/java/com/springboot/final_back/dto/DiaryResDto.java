@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Set;
 
 @Data @Builder
@@ -20,7 +21,7 @@ public class DiaryResDto {
     private LocalDateTime createdTime; // 작성 시간
     private LocalDate startDate; // 일정 시작일
     private LocalDate endDate;   // 일정 종료일
-    private Set<String> tags;     // 태그 (Set)
+    private List<String> tags;     // 태그 (Set)
     private Float totalCost;      // 여행 경비
     private String content;     // 내용
     private String nickname;

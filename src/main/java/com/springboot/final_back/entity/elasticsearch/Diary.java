@@ -9,6 +9,7 @@ import org.springframework.data.elasticsearch.annotations.*;
 import javax.persistence.PrePersist;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Set;
 
 @Data // getter, setter, toString, equals, hashCode 등을 자동 생성
@@ -61,7 +62,7 @@ public class Diary {
 
     // 태그(Set 으로 중복 제거)
     @Field(type = FieldType.Keyword)
-    private Set<String> tags;
+    private List<String> tags;
 
     // 여행경비
     @Field(type = FieldType.Float, name = "total_cost")
@@ -82,7 +83,7 @@ public class Diary {
 
 
     @Builder
-    private Diary(String diaryId, String title, String region, LocalDate startDate, LocalDate endDate, Set<String> tags, Float totalCost, String content, Long memberId, boolean isPublic) {
+    private Diary(String diaryId, String title, String region, LocalDate startDate, LocalDate endDate, List<String> tags, Float totalCost, String content, Long memberId, boolean isPublic) {
         this.diaryId = diaryId;
         this.title = title;
         this.region = region;
