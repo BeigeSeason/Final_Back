@@ -28,7 +28,7 @@ public class TourSpots {
     // 주소
     // N-gram 분석은 텍스트를 N-gram (N글자씩 묶음) 단위로 분리하여 인덱싱하는 방식
     @MultiField(
-            mainField = @Field(type = FieldType.Text, analyzer = "nori_analyzer_with_stopwords"),
+            mainField = @Field(type = FieldType.Text, analyzer = "nori_analyzer_simple"),
             otherFields = {
                     @InnerField(type = FieldType.Text, analyzer = "nori_ngram_analyzer", suffix = "ngram")
             }
@@ -37,7 +37,7 @@ public class TourSpots {
 
     // 상세주소
     @MultiField(
-            mainField = @Field(type = FieldType.Text, analyzer = "nori_analyzer_with_stopwords"),
+            mainField = @Field(type = FieldType.Text, analyzer = "nori_analyzer_simple"),
             otherFields = {
                     @InnerField(type = FieldType.Text, analyzer = "nori_ngram_analyzer", suffix = "ngram")
             }
@@ -46,7 +46,7 @@ public class TourSpots {
 
     // 제목
     @MultiField(
-            mainField = @Field(type = FieldType.Text, analyzer = "nori_analyzer_with_stopwords"),
+            mainField = @Field(type = FieldType.Text, analyzer = "nori_analyzer_simple"),
             otherFields = {
                     @InnerField(type = FieldType.Text, analyzer = "nori_ngram_analyzer", suffix = "ngram")
             }
