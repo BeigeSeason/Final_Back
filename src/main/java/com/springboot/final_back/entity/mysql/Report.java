@@ -22,7 +22,7 @@ public class Report {
     // 신고 타입(멤버, 다이어리, 댓글(리뷰)
     @Enumerated(EnumType.STRING)
     @Column(name = "report_type")
-    private Type reportType;
+    private Type reportType; // MEMBER, DIARY, REVIEW, TOURSPOT
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "reporter")
@@ -32,7 +32,7 @@ public class Report {
     @JoinColumn(name = "reported")
     private Member reported;
 
-    private String reportEntity;
+    private String reportEntity; // 다이어리id, 리뷰id
 
     @Lob
     private String reason;
@@ -51,10 +51,12 @@ public class Report {
     }
 
     @Builder
-    public Report(Long id, Member reporter, Member reported, String reason) {
+    public Report(Long id, Type reportType, Member reporter, Member reported, String reportEntity, String reason) {
         this.id = id;
+        this.reportType = reportType;
         this.reporter = reporter;
         this.reported = reported;
+        this.reportEntity = reportEntity;
         this.reason = reason;
         this.state = State.WAIT;
     }

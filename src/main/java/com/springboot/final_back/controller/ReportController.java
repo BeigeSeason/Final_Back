@@ -1,5 +1,6 @@
 package com.springboot.final_back.controller;
 
+import com.springboot.final_back.dto.ReportReqDto;
 import com.springboot.final_back.dto.ReportResDto;
 import com.springboot.final_back.service.ReportService;
 import lombok.RequiredArgsConstructor;
@@ -14,5 +15,11 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 @CrossOrigin(origins = "http://localhost:3000")
 public class ReportController {
+    private final ReportService reportService;
 
+    // 신고하기
+    @PostMapping("")
+    public ResponseEntity<Boolean> insertReport(@RequestBody ReportReqDto reportReqDto) {
+        return ResponseEntity.ok(reportService.insertReport(reportReqDto));
+    }
 }
