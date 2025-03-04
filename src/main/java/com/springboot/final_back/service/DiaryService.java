@@ -90,8 +90,9 @@ public class DiaryService {
         Diary diary = diaryRepository.findByDiaryId(diaryId).orElseThrow(() ->  new RuntimeException("Diary not found"));
         Member member = memberRepository.findById(diary.getMemberId()).orElseThrow(() ->  new RuntimeException("Member not found"));
         String nickname = member.getNickname();
+        String ownerId = member.getUserId();
         String imgPath = member.getImgPath();
-        return DiaryResDto.fromEntity(diary, nickname, imgPath);
+        return DiaryResDto.fromEntity(diary, nickname, ownerId, imgPath);
     }
 
     // 다이어리 공개/비공개 전환

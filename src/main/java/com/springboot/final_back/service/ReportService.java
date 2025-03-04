@@ -31,14 +31,21 @@ public class ReportService {
 
     // 신고 생성
     public boolean insertReport(ReportReqDto reportReqDto) {
+        log.error(reportReqDto.toString());
         try {
+            log.error("reporter : {}", reportReqDto.getReporter());
+            log.error("reported : {}", reportReqDto.getReported());
             Member reporter = memberRepository.findByUserId(String.valueOf(reportReqDto.getReporter()))
                     .orElseThrow(() -> new RuntimeException("해당 회원을 찾을 수 없습니다."));
 
             Member reported = memberRepository.findByUserId(String.valueOf(reportReqDto.getReported()))
                     .orElseThrow(() -> new RuntimeException("해당 회원을 찾을 수 없습니다."));
 
-            Report report = reportReqDto.toEntity(reportReqDto.getReason(), reporter, reported);
+            if (reportReqDto.getReportType() != Type.MEMBER&& (reportReqDto.getReportEntity() == null || reportReqDto.getReportEntity().isEmpty())) {
+                throw new IllegalArgumentException("다이어리나 리뷰 신고 시 reportEntity는 필수입니다.");
+            }
+
+            Report report = reportReqDto.toEntity(reportReqDto.getReason(), reporter, reported, reportReqDto.getReportEntity(), reportReqDto.getReportType());
 
             reportRepository.save(report);
 

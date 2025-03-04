@@ -2,6 +2,7 @@ package com.springboot.final_back.dto;
 
 import com.springboot.final_back.entity.mysql.Member;
 import com.springboot.final_back.entity.mysql.Report;
+import com.springboot.final_back.constant.Type;
 import lombok.*;
 
 @Getter
@@ -12,14 +13,18 @@ import lombok.*;
 @Builder
 public class ReportReqDto {
     private String reason;
-    private Member reporter;
-    private Member reported;
+    private String reporter;
+    private String reported;
+    private String reportEntity;
+    private Type reportType;
 
-    public Report toEntity(String reason, Member reporter, Member reported) {
+    public Report toEntity(String reason, Member reporter, Member reported, String reportEntity, Type reportType) {
         return Report.builder()
                 .reason(reason)
                 .reporter(reporter)
                 .reported(reported)
+                .reportEntity(reportEntity)
+                .reportType(reportType)
                 .build();
     }
 }
