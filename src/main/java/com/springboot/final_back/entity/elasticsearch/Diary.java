@@ -81,6 +81,9 @@ public class Diary {
     @Field(type = FieldType.Boolean, name = "is_public")
     private boolean isPublic;
 
+    @Field(type = FieldType.Float, name = "bookmark_count")
+    private int bookmarkCount;
+
 
     @Builder
     private Diary(String diaryId, String title, String region, LocalDate startDate, LocalDate endDate, List<String> tags, Float totalCost, String content, Long memberId, boolean isPublic) {

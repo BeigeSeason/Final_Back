@@ -1,13 +1,11 @@
 package com.springboot.final_back.service;
 
 import com.springboot.final_back.constant.Type;
+import com.springboot.final_back.entity.elasticsearch.Diary;
 import com.springboot.final_back.entity.elasticsearch.TourSpots;
 import com.springboot.final_back.entity.mysql.Bookmark;
 import com.springboot.final_back.entity.mysql.Member;
-import com.springboot.final_back.repository.BookmarkRepository;
-import com.springboot.final_back.repository.MemberRepository;
-import com.springboot.final_back.repository.ReviewRepository;
-import com.springboot.final_back.repository.TourSpotsRepository;
+import com.springboot.final_back.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,6 +17,7 @@ public class BookmarkService {
     private final TourSpotsRepository tourSpotsRepository;
     private final ReviewRepository reviewRepository;
     private final MemberRepository memberRepository;
+    private final DiaryRepository diaryRepository;
 
     @Transactional
     public void addBookmark(String targetId, String userId, Type type) {
@@ -29,27 +28,30 @@ public class BookmarkService {
         bookmark.setBookmarkedId(targetId);
         bookmark.setMember(member);
         bookmarkRepository.save(bookmark);
-        updateTourSpotStats(targetId);
+        if (bookmark.getType() == Type.DIARY) {
+            Diary diary = diaryRepository.findByDiaryId(bookmark.getBookmarkedId()).orElseThrow(() -> new RuntimeException("Diary not found"));
+            diary.setBookmarkCount(diary.getBookmarkCount() + 1);
+        } else {
+            TourSpots tourSpot = tourSpotsRepository.findByContentId(bookmark.getBookmarkedId()).orElseThrow(() -> new RuntimeException("Diary not found"));
+            tourSpot.setBookmarkCount(tourSpot.getBookmarkCount() + 1);
+        }
     }
 
     @Transactional
     public void deleteBookmark(Long bookmarkId) {
         Bookmark bookmark = bookmarkRepository.findById(bookmarkId)
                 .orElseThrow(() -> new RuntimeException("Bookmark not found"));
-        String tourSpotId = bookmark.getBookmarkedId();
+
+        if (bookmark.getType() == Type.DIARY) {
+            Diary diary = diaryRepository.findByDiaryId(bookmark.getBookmarkedId()).orElseThrow(() -> new RuntimeException("Diary not found"));
+            diary.setBookmarkCount(diary.getBookmarkCount() - 1);
+            diaryRepository.save(diary);
+        } else {
+            TourSpots tourSpot = tourSpotsRepository.findByContentId(bookmark.getBookmarkedId()).orElseThrow(() -> new RuntimeException("Diary not found"));
+            tourSpot.setBookmarkCount(tourSpot.getBookmarkCount() - 1);
+            tourSpotsRepository.save(tourSpot);
+        }
         bookmarkRepository.delete(bookmark);
-        updateTourSpotStats(tourSpotId);
     }
 
-    private void updateTourSpotStats(String tourSpotId) {
-        TourSpots tourSpot = tourSpotsRepository.findByContentId(tourSpotId)
-                .orElseThrow(() -> new RuntimeException("TourSpot not found"));
-        Integer reviewCount = reviewRepository.countByTourSpotId(tourSpotId);
-        Double avgRating = reviewRepository.avgRatingByTourSpotId(tourSpotId);
-        Integer bookmarkCount = bookmarkRepository.countByBookmarkedId(tourSpotId);
-        tourSpot.setReviewCount(reviewCount != null ? reviewCount : 0);
-        tourSpot.setRating(avgRating != null ? avgRating : 0.0);
-        tourSpot.setBookmarkCount(bookmarkCount != null ? bookmarkCount : 0);
-        tourSpotsRepository.save(tourSpot);
-    }
 }
