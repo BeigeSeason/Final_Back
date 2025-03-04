@@ -23,6 +23,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Sort;
@@ -81,7 +83,7 @@ public class SearchService {
                             .diaryId(diary.getDiaryId())
                             .title(diary.getTitle())
                             .contentSummary(diary.getContent().length() > 150 ? diary.getContent().substring(0, 150) + "..." : diary.getContent())
-                            .thumbnail(null)
+                            .thumbnail(extractFirstImageSrc(diary.getContent()))
                             .writer(author.getNickname())
                             .writerImg(author.getImgPath() != null ? author.getImgPath() : null)
                             .createdAt(diary.getCreatedTime())
@@ -126,6 +128,24 @@ public class SearchService {
                 pageable,
                 searchHits.getTotalHits()
         );
+    }
+
+    // 정규표현식을 통한 HTML 파싱
+    private String extractFirstImageSrc(String content) {
+        if (content == null || !content.contains("<img")) {
+            return null;
+        }
+        try {
+            Pattern pattern = Pattern.compile("<img\\s+[^>]*src=['\"](.*?)['\"]");
+            Matcher matcher = pattern.matcher(content);
+            if (matcher.find()) {
+                return matcher.group(1);
+            }
+            return null;
+        } catch (Exception e) {
+            log.warn("Failed to extract image src from content: {}", content, e);
+            return null;
+        }
     }
 
 }
