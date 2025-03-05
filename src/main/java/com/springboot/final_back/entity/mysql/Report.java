@@ -5,7 +5,7 @@ import com.springboot.final_back.constant.State;
 import com.springboot.final_back.constant.Type;
 import lombok.*;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity

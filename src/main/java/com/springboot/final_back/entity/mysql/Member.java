@@ -4,7 +4,7 @@ import com.springboot.final_back.constant.MemberRole;
 import com.springboot.final_back.dto.MemberResDto;
 import lombok.*;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity

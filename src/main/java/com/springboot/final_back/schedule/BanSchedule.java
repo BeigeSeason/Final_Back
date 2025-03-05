@@ -10,7 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import javax.transaction.Transactional;
+import jakarta.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -25,7 +25,7 @@ public class BanSchedule {
 
     @Scheduled(cron = "0 0 6 * * *", zone = "Asia/Seoul")
     @Transactional
-    private void memberUnbanSchedule() {
+    protected void memberUnbanSchedule() {
         log.info("memberUnbanSchedule");
         try {
             LocalDateTime now = LocalDateTime.now();
