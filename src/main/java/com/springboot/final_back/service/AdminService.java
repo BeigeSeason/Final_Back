@@ -7,6 +7,7 @@ import com.springboot.final_back.entity.mysql.Ban;
 import com.springboot.final_back.entity.mysql.Member;
 import com.springboot.final_back.entity.mysql.Report;
 import com.springboot.final_back.repository.BanRepository;
+import com.springboot.final_back.repository.DiaryRepository;
 import com.springboot.final_back.repository.MemberRepository;
 import com.springboot.final_back.repository.ReportRepository;
 import lombok.AllArgsConstructor;
@@ -20,12 +21,18 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
 @AllArgsConstructor
 public class AdminService {
     private final MemberRepository memberRepository;
+    private final DiaryRepository diaryRepository;
     private final ReportRepository reportRepository;
     private final BanRepository banRepository;
 
@@ -160,5 +167,25 @@ public class AdminService {
             log.error(e.getMessage());
             return false;
         }
+    }
+
+    // 월별 유저 통계
+    public List<Integer> getMonthlyStats(String type, int year) throws IllegalAccessException {
+        List<Integer> signups = new ArrayList<>(Collections.nCopies(12, 0));
+
+        List<Object[]> rawData = switch (type) {
+            case "user" -> memberRepository.getMonthlySignups(year);
+            case "diary" -> diaryRepository.getMonthlyDiaryCounts(year);
+            case "report" -> reportRepository.getMonthlyReportCounts(year);
+            default -> throw new IllegalAccessException("타입이 없음: " + type);
+        };
+
+        for (Object[] row : rawData) {
+            int month = (int) row[0];
+            int count = ((Number) row[1]).intValue();
+            signups.set(month - 1, count);
+        }
+
+        return signups;
     }
 }
