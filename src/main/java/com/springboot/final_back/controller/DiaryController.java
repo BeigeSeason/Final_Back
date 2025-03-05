@@ -32,6 +32,7 @@ public class DiaryController {
         return ResponseEntity.ok(diaryService.deleteDiary(diaryId));
     }
 
+    // 다이어리 상세내용
     @GetMapping("/diary-detail/{diaryId}")
     public ResponseEntity<DiaryResDto> getDiaryDetail(@PathVariable String diaryId) {
         return ResponseEntity.ok(diaryService.getDiaryDetail(diaryId));

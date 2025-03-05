@@ -43,4 +43,10 @@ public class SearchController {
     public ResponseEntity<TourSpotDetailDto> getTourSpotDetail(@RequestParam String tourSpotId) {
         return new ResponseEntity<>(tourSpotService.getTourSpotDetail(tourSpotId), HttpStatus.OK);
     }
+
+    // 특정 유저 다이어리 목록 조회
+    @GetMapping("/my-diary-list")
+    public ResponseEntity<Page<DiarySearchListDto>> getMyDiaryList(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int size, @RequestParam String userId) {
+        return ResponseEntity.ok(searchService.getMyDiaryList(userId, page, size));
+    }
 }
