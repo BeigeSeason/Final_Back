@@ -102,7 +102,7 @@ public class AdminController {
 
     // 월별 가입자수
     @GetMapping("/chart/{type}/{year}")
-    public ResponseEntity<List<Integer>> getMonthlySignups(@PathVariable String type, @PathVariable int year) {
+    public ResponseEntity<List<Integer>> getMonthlySignups(@PathVariable String type, @PathVariable int year) throws IllegalAccessException {
         List<Integer> signupCounts = adminService.getMonthlyStats(type, year);
         return ResponseEntity.ok(signupCounts);
     }
