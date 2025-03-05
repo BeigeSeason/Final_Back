@@ -4,6 +4,8 @@ import com.springboot.final_back.entity.mysql.Member;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.Collection;
@@ -32,4 +34,12 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     Optional<Member> findByNameAndEmail(String name, String email);
 
     Optional<Member> findByUserIdAndEmail(String id, String email);
+
+    // 월별 가입자 수 조회
+    @Query("SELECT MONTH(m.regDate), COUNT(m) " +
+            "FROM Member m " +
+            "WHERE YEAR(m.regDate) = :year " +
+            "GROUP BY MONTH(m.regDate) " +
+            "ORDER BY MONTH(m.regDate)")
+    List<Object[]> getMonthlySignups(@Param("year") int year);
 }

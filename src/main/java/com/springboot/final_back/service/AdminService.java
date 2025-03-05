@@ -20,6 +20,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -160,5 +165,19 @@ public class AdminService {
             log.error(e.getMessage());
             return false;
         }
+    }
+
+    // 월별 가입자수
+    public List<Integer> getMonthlySignup(int year) {
+        List<Integer> signups = new ArrayList<>(Collections.nCopies(12, 0));
+
+        List<Object[]> rawData = memberRepository.getMonthlySignups(year);
+        for (Object[] row : rawData) {
+            int month = (int) row[0];
+            int count = ((Number) row[1]).intValue();
+            signups.set(month - 1, count);
+        }
+
+        return signups;
     }
 }

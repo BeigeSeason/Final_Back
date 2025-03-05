@@ -3,7 +3,6 @@ package com.springboot.final_back.controller;
 import com.springboot.final_back.dto.BanReqDto;
 import com.springboot.final_back.dto.MemberResDto;
 import com.springboot.final_back.dto.ReportResDto;
-import com.springboot.final_back.entity.mysql.Member;
 import com.springboot.final_back.service.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -14,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.transaction.Transactional;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Slf4j
@@ -98,5 +98,12 @@ public class AdminController {
     public ResponseEntity<Boolean> banManage(@RequestBody BanReqDto request) {
         boolean isSuccess = adminService.memberBan(request.getId(), request.getDay(), request.getReason());
         return ResponseEntity.ok(isSuccess);
+    }
+
+    // 월별 가입자수
+    @GetMapping("/chart/signups/{year}")
+    public ResponseEntity<List<Integer>> getMonthlySignups(@PathVariable int year) {
+        List<Integer> signupCounts = adminService.getMonthlySignup(year);
+        return ResponseEntity.ok(signupCounts);
     }
 }
