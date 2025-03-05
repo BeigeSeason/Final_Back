@@ -99,7 +99,7 @@ public class SearchService {
 
         Sort sortOrder = sort != null && !sort.isEmpty() ?
                 Sort.by(Sort.Direction.fromString(sort.split(",")[1]), sort.split(",")[0]) :
-                Sort.by(Sort.Direction.ASC, "title.keyword");
+                Sort.by(Sort.Direction.ASC, "title.korean_sorted");
         Pageable pageable = PageRequest.of(page, size, sortOrder);
 
         BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
