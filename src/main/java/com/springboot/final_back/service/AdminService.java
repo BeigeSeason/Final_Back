@@ -167,11 +167,15 @@ public class AdminService {
         }
     }
 
-    // 월별 가입자수
-    public List<Integer> getMonthlySignup(int year) {
+    // 월별 유저 통계
+    public List<Integer> getMonthlyStats(String type, int year) {
         List<Integer> signups = new ArrayList<>(Collections.nCopies(12, 0));
 
-        List<Object[]> rawData = memberRepository.getMonthlySignups(year);
+        List<Object[]> rawData = List.of();
+        if( type.equals("user")) {
+            rawData = memberRepository.getMonthlySignups(year);
+        }
+
         for (Object[] row : rawData) {
             int month = (int) row[0];
             int count = ((Number) row[1]).intValue();

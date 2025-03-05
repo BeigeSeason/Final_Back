@@ -101,9 +101,9 @@ public class AdminController {
     }
 
     // 월별 가입자수
-    @GetMapping("/chart/signups/{year}")
-    public ResponseEntity<List<Integer>> getMonthlySignups(@PathVariable int year) {
-        List<Integer> signupCounts = adminService.getMonthlySignup(year);
+    @GetMapping("/chart/{type}/{year}")
+    public ResponseEntity<List<Integer>> getMonthlySignups(@PathVariable String type, @PathVariable int year) {
+        List<Integer> signupCounts = adminService.getMonthlyStats(type, year);
         return ResponseEntity.ok(signupCounts);
     }
 }
