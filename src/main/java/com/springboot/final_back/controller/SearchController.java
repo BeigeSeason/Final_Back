@@ -44,9 +44,16 @@ public class SearchController {
         return new ResponseEntity<>(tourSpotService.getTourSpotDetail(tourSpotId), HttpStatus.OK);
     }
 
-    // 특정 유저 다이어리 목록 조회
+    // 나의 다이어리 목록 조회(비공개 포함)
     @GetMapping("/my-diary-list")
     public ResponseEntity<Page<DiarySearchListDto>> getMyDiaryList(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int size, @RequestParam String userId) {
         return ResponseEntity.ok(searchService.getMyDiaryList(userId, page, size));
     }
+
+    // 다른 유저 다이어리 목록 조회(비공개 미포함)
+    @GetMapping("/otheruser-diary-list")
+    public ResponseEntity<Page<DiarySearchListDto>> getOtherUserDiaryList(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int size, @RequestParam String userId) {
+        return ResponseEntity.ok(searchService.getOtherUserDiaryList(userId, page, size));
+    }
+
 }

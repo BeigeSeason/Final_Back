@@ -130,11 +130,39 @@ public class SearchService {
         );
     }
 
-    // 특정 유저 다이어리 목록 조회
+    // 나의 다이어리 목록 조회(비공개 포함)
     public Page<DiarySearchListDto> getMyDiaryList(String userId, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
         Member author = memberRepository.findByUserId(userId).orElseThrow(() -> new RuntimeException("Member not found"));
         Page<Diary> diaryPage = diaryRepository.findByMemberId(author.getId(), pageable);
+
+        if (diaryPage.isEmpty()) {
+            log.debug("No diaries found for userId: {}", userId);
+            return Page.empty(pageable);
+        }
+
+        List<DiarySearchListDto> dtoList = diaryPage.getContent().stream()
+                .map(diary -> DiarySearchListDto.builder()
+                        .diaryId(diary.getDiaryId())
+                        .title(diary.getTitle())
+                        .contentSummary(diary.getContent().length() > 150 ?
+                                diary.getContent().substring(0, 150) + "..." :
+                                diary.getContent())
+                        .thumbnail(extractFirstImageSrc(diary.getContent()))
+                        .writer(author.getNickname())
+                        .writerImg(author.getImgPath() != null ? author.getImgPath() : null)
+                        .createdAt(diary.getCreatedTime())
+                        .build())
+                .toList();
+
+        return new PageImpl<>(dtoList, pageable, diaryPage.getTotalElements());
+    }
+
+    // 특정 유저 다이어리 목록 조회(비공개 미포함)
+    public Page<DiarySearchListDto> getOtherUserDiaryList(String userId, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Member author = memberRepository.findByUserId(userId).orElseThrow(() -> new RuntimeException("Member not found"));
+        Page<Diary> diaryPage = diaryRepository.findByMemberIdAndIsPublicTrue(author.getId(), pageable);
 
         if (diaryPage.isEmpty()) {
             log.debug("No diaries found for userId: {}", userId);

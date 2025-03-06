@@ -17,6 +17,7 @@ public interface DiaryRepository extends ElasticsearchRepository<Diary, String> 
 
     Page<Diary> findByTitle(String title, Pageable pageable);
     Page<Diary> findByMemberId(Long memberId, Pageable pageable);
+    Page<Diary> findByMemberIdAndIsPublicTrue(Long memberId, Pageable pageable);
     Optional<Diary> findByDiaryId(String diaryId);
 
     // 월별 일지 통계
