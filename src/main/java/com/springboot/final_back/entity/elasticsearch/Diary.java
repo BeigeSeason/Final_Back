@@ -91,10 +91,12 @@ public class Diary {
     private String sigunguCode;
 
     @Builder
-    private Diary(String diaryId, String title, String region, LocalDate startDate, LocalDate endDate, List<String> tags, Float totalCost, String content, Long memberId, boolean isPublic) {
+    private Diary(String diaryId, String title, String region, String areaCode, String sigunguCode, LocalDate startDate, LocalDate endDate, List<String> tags, Float totalCost, String content, Long memberId, boolean isPublic) {
         this.diaryId = diaryId;
         this.title = title;
         this.region = region;
+        this.areaCode = areaCode;
+        this.sigunguCode = sigunguCode;
         this.startDate = startDate;
         this.endDate = endDate;
         this.tags = tags;
