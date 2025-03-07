@@ -53,6 +53,10 @@ public class ReviewBookmarkController {
         return new ResponseEntity<>(bookmarkService.deleteBookmark(targetId, userId), HttpStatus.OK);
     }
 
+    // 내가 북마크 했는가
+//    @GetMapping("/my-bookmark")
+
+
     // 리뷰 조회
     @GetMapping("/review-list")
     public ResponseEntity<Page<ReviewResDto>> getReviews(@RequestParam int page,
