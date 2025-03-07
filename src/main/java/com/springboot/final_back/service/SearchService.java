@@ -52,11 +52,19 @@ public class SearchService {
                 .withPageable(pageable)
                 .build();
 
-        return searchAndMap(query, Diary.class, pageable, "keyword: " + keyword,
-                diaries -> {
-                    Map<Long, Member> memberMap = getMemberMap(diaries);
-                    return mapToDiaryDtoList(diaries, memberMap);
-                });
+        SearchHits<Diary> searchHits = elasticsearchOperations.search(query, Diary.class);
+        if (searchHits.isEmpty()) {
+            log.debug("No diaries found for keyword: {}", keyword);
+            return Page.empty(pageable);
+        }
+
+        List<Diary> diaries = searchHits.getSearchHits().stream()
+                .map(SearchHit::getContent)
+                .collect(Collectors.toList());
+        Map<Long, Member> memberMap = getMemberMap(diaries);
+
+        List<DiarySearchListDto> dtoList = mapToDiaryDtoList(diaries, memberMap);
+        return new PageImpl<>(dtoList, pageable, searchHits.getTotalHits());
     }
 
     // 관광지 검색
@@ -86,8 +94,13 @@ public class SearchService {
                 .withPageable(pageable)
                 .build();
 
-        return searchAndMap(query, TourSpots.class, pageable, "tour spots",
-                tourSpots -> tourSpots.stream().map(TourSpots::convertToListDto).toList());
+        SearchHits<TourSpots> searchHits = elasticsearchOperations.search(query, TourSpots.class);
+        List<TourSpotListDto> dtoList = searchHits.getSearchHits().stream()
+                .map(SearchHit::getContent)
+                .map(TourSpots::convertToListDto)
+                .collect(Collectors.toList());
+
+        return new PageImpl<>(dtoList, pageable, searchHits.getTotalHits());
     }
 
     // 나의 다이어리 목록 조회 (비공개 포함)
@@ -95,20 +108,34 @@ public class SearchService {
         Pageable pageable = PageRequest.of(page, size);
         Member author = memberRepository.findByUserId(userId)
                 .orElseThrow(() -> new RuntimeException("Member not found"));
+        log.info("{}, {}, {}", userId, page, size);
 
         BoolQueryBuilder boolQuery = QueryBuilders.boolQuery()
-                .filter(QueryBuilders.termQuery("memberId", author.getId()));
+                .filter(QueryBuilders.termQuery("member_id", author.getId()));
+
+        log.info("Query: {}", boolQuery.toString());
 
         Query query = new NativeSearchQueryBuilder()
                 .withQuery(boolQuery)
                 .withPageable(pageable)
                 .build();
+        log.info("Query: {}", query.toString());
 
-        return searchAndMap(query, Diary.class, pageable, "userId: " + userId,
-                diaries -> {
-                    Map<Long, Member> memberMap = Map.of(author.getId(), author);
-                    return mapToDiaryDtoList(diaries, memberMap);
-                });
+        SearchHits<Diary> searchHits = elasticsearchOperations.search(query, Diary.class);
+        if (searchHits.isEmpty()) {
+            log.warn("No diaries found for userId: {}", userId);
+            return Page.empty(pageable);
+        }
+
+
+
+        List<Diary> diaries = searchHits.getSearchHits().stream()
+                .map(SearchHit::getContent)
+                .collect(Collectors.toList());
+        Map<Long, Member> memberMap = Map.of(author.getId(), author); // 단일 멤버만 필요
+
+        List<DiarySearchListDto> dtoList = mapToDiaryDtoList(diaries, memberMap);
+        return new PageImpl<>(dtoList, pageable, searchHits.getTotalHits());
     }
 
     // 특정 유저 다이어리 목록 조회 (비공개 미포함)
@@ -118,39 +145,30 @@ public class SearchService {
                 .orElseThrow(() -> new RuntimeException("Member not found"));
 
         BoolQueryBuilder boolQuery = QueryBuilders.boolQuery()
-                .filter(QueryBuilders.termQuery("memberId", author.getId()))
-                .filter(QueryBuilders.termQuery("isPublic", true));
+                .filter(QueryBuilders.termQuery("member_id", author.getId()))
+                .filter(QueryBuilders.termQuery("is_public", true));
 
         Query query = new NativeSearchQueryBuilder()
                 .withQuery(boolQuery)
                 .withPageable(pageable)
                 .build();
 
-        return searchAndMap(query, Diary.class, pageable, "userId: " + userId,
-                diaries -> {
-                    Map<Long, Member> memberMap = Map.of(author.getId(), author);
-                    return mapToDiaryDtoList(diaries, memberMap);
-                });
-    }
-
-    // 공통 검색 및 매핑 메서드
-    private <T, R> Page<R> searchAndMap(Query query, Class<T> entityClass, Pageable pageable, String logContext,
-                                        Function<List<T>, List<R>> mapper) {
-        SearchHits<T> searchHits = elasticsearchOperations.search(query, entityClass);
+        SearchHits<Diary> searchHits = elasticsearchOperations.search(query, Diary.class);
         if (searchHits.isEmpty()) {
-            log.debug("No results found for {}", logContext);
+            log.debug("No diaries found for userId: {}", userId);
             return Page.empty(pageable);
         }
 
-        List<T> entities = searchHits.getSearchHits().stream()
+        List<Diary> diaries = searchHits.getSearchHits().stream()
                 .map(SearchHit::getContent)
                 .collect(Collectors.toList());
-        List<R> dtoList = mapper.apply(entities);
+        Map<Long, Member> memberMap = Map.of(author.getId(), author); // 단일 멤버만 필요
 
+        List<DiarySearchListDto> dtoList = mapToDiaryDtoList(diaries, memberMap);
         return new PageImpl<>(dtoList, pageable, searchHits.getTotalHits());
     }
 
-    // Diary 리스트를 DTO로 변환
+    // 공통 메서드: Diary 리스트를 DTO로 변환
     private List<DiarySearchListDto> mapToDiaryDtoList(List<Diary> diaries, Map<Long, Member> memberMap) {
         return diaries.stream()
                 .map(diary -> {
@@ -170,7 +188,7 @@ public class SearchService {
                 .toList();
     }
 
-    // Member 맵 생성
+    // 공통 메서드: Member 맵 생성
     private Map<Long, Member> getMemberMap(List<Diary> diaries) {
         List<Long> memberIdList = diaries.stream()
                 .map(Diary::getMemberId)
