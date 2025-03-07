@@ -1,17 +1,15 @@
 package com.springboot.final_back.service;
 
-import com.springboot.final_back.dto.ReviewDto;
+import com.springboot.final_back.dto.ReviewReqDto;
 import com.springboot.final_back.entity.elasticsearch.TourSpots;
 import com.springboot.final_back.entity.mysql.Member;
 import com.springboot.final_back.entity.mysql.Review;
-import com.springboot.final_back.repository.BookmarkRepository;
 import com.springboot.final_back.repository.MemberRepository;
 import com.springboot.final_back.repository.ReviewRepository;
 import com.springboot.final_back.repository.TourSpotsRepository;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,29 +19,27 @@ import org.springframework.transaction.annotation.Transactional;
 public class ReviewService {
     private final ReviewRepository reviewRepository;
     private final TourSpotsRepository tourSpotsRepository;
-    private final ElasticsearchOperations elasticsearchOperations;
-    private final BookmarkRepository bookmarkRepository;
     private final MemberRepository memberRepository;
 
     // 리뷰 작성
     @Transactional
-    public boolean addReview(ReviewDto reviewDto) {
+    public boolean addReview(ReviewReqDto reviewReqDto) {
         try {
-            Member member = memberRepository.findByUserId(reviewDto.getMemberId())
+            Member member = memberRepository.findByUserId(reviewReqDto.getMemberId())
                     .orElseThrow(() -> new RuntimeException("존재하지 않는 사용자"));
 
             Review review = Review.builder()
                     .member(member)
-                    .rating(reviewDto.getRating())
-                    .tourSpotId(reviewDto.getTourSpotId())
-                    .content(reviewDto.getContent())
+                    .rating(reviewReqDto.getRating())
+                    .tourSpotId(reviewReqDto.getTourSpotId())
+                    .content(reviewReqDto.getContent())
                     .build();
             reviewRepository.save(review);
 
             TourSpots spot = tourSpotsRepository.findByContentId(review.getTourSpotId()).orElseThrow(() -> new RuntimeException("존재하지 않는 여행지"));
 
             spot.setReviewCount(spot.getReviewCount() + 1);
-            spot.setRating(spot.getRating() + reviewDto.getRating());
+            spot.setRating(spot.getRating() + reviewReqDto.getRating());
             spot.setAvgRating(spot.getRating() / spot.getReviewCount());
 
             tourSpotsRepository.save(spot);
@@ -56,21 +52,21 @@ public class ReviewService {
 
     // 리뷰 수정
     @Transactional
-    public boolean editReview(ReviewDto reviewDto) {
+    public boolean editReview(ReviewReqDto reviewReqDto) {
         try {
-            Review review = reviewRepository.findById(reviewDto.getId())
+            Review review = reviewRepository.findById(reviewReqDto.getId())
                     .orElseThrow(() -> new RuntimeException("Review not found"));
 
             float rating = review.getRating();
 
-            review.setRating(reviewDto.getRating());
-            review.setContent(reviewDto.getContent());
+            review.setRating(reviewReqDto.getRating());
+            review.setContent(reviewReqDto.getContent());
             reviewRepository.save(review);
 
             TourSpots spot = tourSpotsRepository.findByContentId(review.getTourSpotId()).orElseThrow(() -> new RuntimeException("존재하지 않는 여행지"));
 
             // 기존의 리뷰 점수를 빼고 새 리뷰 점수 더하기
-            float newRating = spot.getRating() - rating + reviewDto.getRating();
+            float newRating = spot.getRating() - rating + reviewReqDto.getRating();
 
             spot.setRating(newRating);
             spot.setAvgRating(newRating / spot.getReviewCount());
@@ -105,5 +101,7 @@ public class ReviewService {
             throw new RuntimeException(e);
         }
     }
+
+//    public Page
 
 }

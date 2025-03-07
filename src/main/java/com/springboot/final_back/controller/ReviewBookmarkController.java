@@ -1,12 +1,7 @@
 package com.springboot.final_back.controller;
 
 
-import com.springboot.final_back.constant.Type;
-import com.springboot.final_back.dto.ReviewDto;
-import com.springboot.final_back.entity.mysql.Bookmark;
-import com.springboot.final_back.entity.mysql.Review;
-import com.springboot.final_back.repository.BookmarkRepository;
-import com.springboot.final_back.repository.ReviewRepository;
+import com.springboot.final_back.dto.ReviewReqDto;
 import com.springboot.final_back.service.BookmarkService;
 import com.springboot.final_back.service.ReviewService;
 import lombok.RequiredArgsConstructor;
@@ -25,13 +20,13 @@ public class ReviewBookmarkController {
     private final BookmarkService bookmarkService;
 
     @PostMapping("/add-review")
-    public ResponseEntity<Boolean> addReview(@RequestBody ReviewDto reviewDto) {
-        return new ResponseEntity<>(reviewService.addReview(reviewDto), HttpStatus.OK);
+    public ResponseEntity<Boolean> addReview(@RequestBody ReviewReqDto reviewReqDto) {
+        return new ResponseEntity<>(reviewService.addReview(reviewReqDto), HttpStatus.OK);
     }
 
     @PostMapping("/edit-review")
-    public ResponseEntity<Boolean> editReview(@RequestBody ReviewDto reviewDto) {
-        return new ResponseEntity<>(reviewService.editReview(reviewDto), HttpStatus.OK);
+    public ResponseEntity<Boolean> editReview(@RequestBody ReviewReqDto reviewReqDto) {
+        return new ResponseEntity<>(reviewService.editReview(reviewReqDto), HttpStatus.OK);
     }
 
     @PostMapping("/delete-review")
