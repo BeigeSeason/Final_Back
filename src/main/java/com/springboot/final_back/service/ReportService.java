@@ -33,8 +33,6 @@ public class ReportService {
     public boolean insertReport(ReportReqDto reportReqDto) {
         log.error(reportReqDto.toString());
         try {
-            log.error("reporter : {}", reportReqDto.getReporter());
-            log.error("reported : {}", reportReqDto.getReported());
             Member reporter = memberRepository.findByUserId(String.valueOf(reportReqDto.getReporter()))
                     .orElseThrow(() -> new RuntimeException("해당 회원을 찾을 수 없습니다."));
 

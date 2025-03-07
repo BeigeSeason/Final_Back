@@ -32,6 +32,8 @@ public class DiaryService {
                     .diaryId(dto.getDiaryId())
                     .title(dto.getTitle())
                     .region(dto.getRegion())
+                    .areaCode(dto.getAreaCode())
+                    .sigunguCode(dto.getSigunguCode())
                     .startDate(dto.getStartDate())
                     .endDate(dto.getEndDate())
                     .tags(dto.getTags())
@@ -57,6 +59,8 @@ public class DiaryService {
                     .orElseThrow(() -> new RuntimeException("해당 일기를 찾을 수 없습니다."));
             diary.setTitle(diaryReqDto.getTitle());
             diary.setRegion(diaryReqDto.getRegion());
+            diary.setAreaCode(diaryReqDto.getAreaCode());
+            diary.setSigunguCode(diaryReqDto.getSigunguCode());
             diary.setStartDate(diaryReqDto.getStartDate());
             diary.setEndDate(diaryReqDto.getEndDate());
             diary.setTags(diaryReqDto.getTags());

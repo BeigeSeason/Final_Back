@@ -24,5 +24,5 @@ public class Bookmark {
 
     private Type type; // MEMBER, DIARY, REVIEW, TOURSPOT
 
-    private String bookmarkedId;
+    private String bookmarkedId; // Diary 아이디, TourSpot 아이디
 }

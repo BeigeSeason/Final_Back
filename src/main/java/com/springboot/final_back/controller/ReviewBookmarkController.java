@@ -46,4 +46,5 @@ public class ReviewBookmarkController {
     public ResponseEntity<Boolean> deleteBookmark(@RequestParam Long reviewId) {
         return new ResponseEntity<>(bookmarkService.deleteBookmark(reviewId), HttpStatus.OK);
     }
+
 }
