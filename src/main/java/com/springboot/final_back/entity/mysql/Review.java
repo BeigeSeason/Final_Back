@@ -21,7 +21,7 @@ public class Review {
     private Member member;
 
     @Column(nullable = false)
-    private int rating;
+    private float rating;
 
     @Column(nullable = false)
     private String tourSpotId;
@@ -36,7 +36,7 @@ public class Review {
     }
 
     @Builder
-    private Review(Member member, int rating, String tourSpotId, String content) {
+    private Review(Member member, float rating, String tourSpotId, String content) {
         this.member = member;
         this.rating = rating;
         this.tourSpotId = tourSpotId;
