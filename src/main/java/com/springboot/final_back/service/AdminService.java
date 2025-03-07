@@ -3,6 +3,7 @@ package com.springboot.final_back.service;
 import com.springboot.final_back.constant.MemberRole;
 import com.springboot.final_back.constant.State;
 import com.springboot.final_back.dto.MemberResDto;
+import com.springboot.final_back.dto.ReportManageReq;
 import com.springboot.final_back.entity.mysql.Ban;
 import com.springboot.final_back.entity.mysql.Member;
 import com.springboot.final_back.entity.mysql.Report;
@@ -35,6 +36,8 @@ public class AdminService {
     private final DiaryRepository diaryRepository;
     private final ReportRepository reportRepository;
     private final BanRepository banRepository;
+    private final DiaryService diaryService;
+    private final ReviewService reviewService;
 
     // 회원 전체 조회
     public Page<MemberResDto> getMemberAllList(int page, int size, String searchType, String searchValue, Boolean type, String sort) {
@@ -115,18 +118,31 @@ public class AdminService {
         return memberPage.map(Member::convertEntityToDto);
     }
 
-    // 신고 관리 (승인, 거절)
-    public boolean reportProcess(Long reportId, boolean state) {
+    // 신고 관리
+    @Transactional
+    public boolean reportProcess(ReportManageReq request) {
         try {
             // 신고 처리
-            Report report = reportRepository.findById(reportId)
+            Report report = reportRepository.findById(request.getReportId())
                     .orElseThrow(() -> new RuntimeException("해당 신고가 존재하지 않습니다."));
-            if (state) {
-                report.setState(State.ACCEPT);
-            } else {
-                report.setState(State.REJECT);
-            }
+            report.setState(request.isState() ? State.ACCEPT : State.REJECT);
             reportRepository.save(report);
+
+            // 유저 정지
+            if (request.getUserId() != null) {
+                memberBan(request.getUserId(), request.getDay(), request.getReason());
+            }
+
+            // 신고 승인 -> 일지or댓글 삭제
+            if (request.isState()) {
+                if (request.getDiaryId() != null) {
+                    diaryService.deleteDiary(request.getDiaryId());
+                }
+                if (request.getReviewId() != null) {
+                    reviewService.deleteReview(request.getReviewId());
+                }
+            }
+
             return true;
         } catch (Exception e) {
             log.error(e.getMessage());
