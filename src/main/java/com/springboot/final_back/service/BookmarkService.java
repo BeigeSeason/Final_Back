@@ -20,38 +20,59 @@ public class BookmarkService {
     private final DiaryRepository diaryRepository;
 
     @Transactional
-    public void addBookmark(String targetId, String userId, Type type) {
-        Member member = memberRepository.findByUserId(userId)
-                .orElseThrow(() -> new RuntimeException("존재하지 않는 사용자"));
-        Bookmark bookmark = new Bookmark();
-        bookmark.setType(type);
-        bookmark.setBookmarkedId(targetId);
-        bookmark.setMember(member);
-        bookmarkRepository.save(bookmark);
-        if (bookmark.getType() == Type.DIARY) {
-            Diary diary = diaryRepository.findByDiaryId(bookmark.getBookmarkedId()).orElseThrow(() -> new RuntimeException("Diary not found"));
-            diary.setBookmarkCount(diary.getBookmarkCount() + 1);
-        } else {
-            TourSpots tourSpot = tourSpotsRepository.findByContentId(bookmark.getBookmarkedId()).orElseThrow(() -> new RuntimeException("Diary not found"));
-            tourSpot.setBookmarkCount(tourSpot.getBookmarkCount() + 1);
+    public boolean addBookmark(String targetId, String userId, String typeStr) {
+        try {
+            Member member = memberRepository.findByUserId(userId)
+                    .orElseThrow(() -> new RuntimeException("존재하지 않는 사용자"));
+            Type type = Type.valueOf(typeStr);
+
+            Bookmark bookmark = Bookmark.builder()
+                    .type(type)
+                    .member(member)
+                    .bookmarkedId(targetId)
+                    .build();
+
+            bookmarkRepository.save(bookmark);
+            if (bookmark.getType() == Type.DIARY) {
+                Diary diary = diaryRepository.findByDiaryId(bookmark.getBookmarkedId()).orElseThrow(() -> new RuntimeException("Diary not found"));
+                diary.setBookmarkCount(diary.getBookmarkCount() + 1);
+
+                diaryRepository.save(diary);
+            } else {
+                TourSpots tourSpot = tourSpotsRepository.findByContentId(bookmark.getBookmarkedId()).orElseThrow(() -> new RuntimeException("Diary not found"));
+                tourSpot.setBookmarkCount(tourSpot.getBookmarkCount() + 1);
+                tourSpotsRepository.save(tourSpot);
+            }
+
+            return true;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
+
+
     }
 
     @Transactional
-    public void deleteBookmark(Long bookmarkId) {
-        Bookmark bookmark = bookmarkRepository.findById(bookmarkId)
-                .orElseThrow(() -> new RuntimeException("Bookmark not found"));
+    public boolean deleteBookmark(Long bookmarkId) {
+        try {
+            Bookmark bookmark = bookmarkRepository.findById(bookmarkId)
+                    .orElseThrow(() -> new RuntimeException("Bookmark not found"));
 
-        if (bookmark.getType() == Type.DIARY) {
-            Diary diary = diaryRepository.findByDiaryId(bookmark.getBookmarkedId()).orElseThrow(() -> new RuntimeException("Diary not found"));
-            diary.setBookmarkCount(diary.getBookmarkCount() - 1);
-            diaryRepository.save(diary);
-        } else {
-            TourSpots tourSpot = tourSpotsRepository.findByContentId(bookmark.getBookmarkedId()).orElseThrow(() -> new RuntimeException("Diary not found"));
-            tourSpot.setBookmarkCount(tourSpot.getBookmarkCount() - 1);
-            tourSpotsRepository.save(tourSpot);
+            if (bookmark.getType() == Type.DIARY) {
+                Diary diary = diaryRepository.findByDiaryId(bookmark.getBookmarkedId()).orElseThrow(() -> new RuntimeException("Diary not found"));
+                diary.setBookmarkCount(diary.getBookmarkCount() - 1);
+                diaryRepository.save(diary);
+            } else {
+                TourSpots tourSpot = tourSpotsRepository.findByContentId(bookmark.getBookmarkedId()).orElseThrow(() -> new RuntimeException("Diary not found"));
+                tourSpot.setBookmarkCount(tourSpot.getBookmarkCount() - 1);
+                tourSpotsRepository.save(tourSpot);
+            }
+            bookmarkRepository.delete(bookmark);
+
+            return true;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
-        bookmarkRepository.delete(bookmark);
     }
 
 }

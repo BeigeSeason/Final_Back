@@ -1,77 +1,107 @@
 package com.springboot.final_back.service;
 
-import com.springboot.final_back.dto.ReviewDto;
+import com.springboot.final_back.dto.ReviewReqDto;
 import com.springboot.final_back.entity.elasticsearch.TourSpots;
 import com.springboot.final_back.entity.mysql.Member;
 import com.springboot.final_back.entity.mysql.Review;
-import com.springboot.final_back.repository.BookmarkRepository;
 import com.springboot.final_back.repository.MemberRepository;
 import com.springboot.final_back.repository.ReviewRepository;
 import com.springboot.final_back.repository.TourSpotsRepository;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ReviewService {
     private final ReviewRepository reviewRepository;
     private final TourSpotsRepository tourSpotsRepository;
-    private final ElasticsearchOperations elasticsearchOperations;
-    private final BookmarkRepository bookmarkRepository;
     private final MemberRepository memberRepository;
 
     // 리뷰 작성
     @Transactional
-    public ReviewDto addReview(ReviewDto reviewDto) {
-        Member member = memberRepository.findByUserId(reviewDto.getMemberId())
-                .orElseThrow(() -> new RuntimeException("존재하지 않는 사용자"));
+    public boolean addReview(ReviewReqDto reviewReqDto) {
+        try {
+            Member member = memberRepository.findByUserId(reviewReqDto.getMemberId())
+                    .orElseThrow(() -> new RuntimeException("존재하지 않는 사용자"));
 
-        Review review = Review.builder()
-                .member(member)
-                .rating(reviewDto.getRating())
-                .tourSpotId(reviewDto.getTourSpotId())
-                .content(reviewDto.getContent())
-                .build();
-        reviewRepository.save(review);
-        updateTourSpotStats(reviewDto.getTourSpotId());
-        return reviewDto;
+            Review review = Review.builder()
+                    .member(member)
+                    .rating(reviewReqDto.getRating())
+                    .tourSpotId(reviewReqDto.getTourSpotId())
+                    .content(reviewReqDto.getContent())
+                    .build();
+            reviewRepository.save(review);
+
+            TourSpots spot = tourSpotsRepository.findByContentId(review.getTourSpotId()).orElseThrow(() -> new RuntimeException("존재하지 않는 여행지"));
+
+            spot.setReviewCount(spot.getReviewCount() + 1);
+            spot.setRating(spot.getRating() + reviewReqDto.getRating());
+            spot.setAvgRating(spot.getRating() / spot.getReviewCount());
+
+            tourSpotsRepository.save(spot);
+            return true;
+        } catch (Exception e) {
+            log.error("리뷰 생성 중 에러 발생");
+            throw new RuntimeException(e);
+        }
     }
 
     // 리뷰 수정
     @Transactional
-    public void updateReview(Long reviewId, ReviewDto reviewDto) {
-        Review review = reviewRepository.findById(reviewId)
-                .orElseThrow(() -> new RuntimeException("Review not found"));
-        review.setRating(reviewDto.getRating());
-        review.setContent(reviewDto.getContent());
-        reviewRepository.save(review);
-        updateTourSpotStats(review.getTourSpotId());
+    public boolean editReview(ReviewReqDto reviewReqDto) {
+        try {
+            Review review = reviewRepository.findById(reviewReqDto.getId())
+                    .orElseThrow(() -> new RuntimeException("Review not found"));
+
+            float rating = review.getRating();
+
+            review.setRating(reviewReqDto.getRating());
+            review.setContent(reviewReqDto.getContent());
+            reviewRepository.save(review);
+
+            TourSpots spot = tourSpotsRepository.findByContentId(review.getTourSpotId()).orElseThrow(() -> new RuntimeException("존재하지 않는 여행지"));
+
+            // 기존의 리뷰 점수를 빼고 새 리뷰 점수 더하기
+            float newRating = spot.getRating() - rating + reviewReqDto.getRating();
+
+            spot.setRating(newRating);
+            spot.setAvgRating(newRating / spot.getReviewCount());
+
+            tourSpotsRepository.save(spot);
+            return true;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     // 리뷰 삭제
     @Transactional
-    public void deleteReview(Long reviewId) {
-        Review review = reviewRepository.findById(reviewId)
-                .orElseThrow(() -> new RuntimeException("Review not found"));
-        String tourSpotId = review.getTourSpotId();
-        reviewRepository.delete(review);
-        updateTourSpotStats(tourSpotId);
+    public boolean deleteReview(Long reviewId) {
+        try {
+            Review review = reviewRepository.findById(reviewId)
+                    .orElseThrow(() -> new RuntimeException("Review not found"));
+
+            reviewRepository.delete(review);
+
+            TourSpots spot = tourSpotsRepository.findByContentId(review.getTourSpotId()).orElseThrow(() -> new RuntimeException("존재하지 않는 여행지"));
+
+            float newRating = spot.getRating() - review.getRating();
+
+            spot.setReviewCount(spot.getReviewCount() - 1);
+            spot.setRating(newRating);
+            spot.setAvgRating(newRating / (spot.getReviewCount() - 1));
+
+            tourSpotsRepository.save(spot);
+            return true;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    // 리뷰 적용 시 도큐먼트 업데이트
-    private void updateTourSpotStats(String tourSpotId) {
-        TourSpots tourSpot = tourSpotsRepository.findByContentId(tourSpotId)
-                .orElseThrow(() -> new RuntimeException("TourSpot not found"));
-        Integer reviewCount = reviewRepository.countByTourSpotId(tourSpotId);
-        Double avgRating = reviewRepository.avgRatingByTourSpotId(tourSpotId);
-        Integer bookmarkCount = bookmarkRepository.countByBookmarkedId(tourSpotId);
-        tourSpot.setReviewCount(reviewCount != null ? reviewCount : 0);
-        tourSpot.setRating(avgRating != null ? avgRating : 0.0);
-        tourSpot.setBookmarkCount(bookmarkCount != null ? bookmarkCount : 0);
-        tourSpotsRepository.save(tourSpot);
-    }
+//    public Page
+
 }
