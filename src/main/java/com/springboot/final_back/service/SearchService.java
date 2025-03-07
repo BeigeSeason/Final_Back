@@ -81,7 +81,6 @@ public class SearchService {
             String[] sortParts = sort.split(",");
             String field = sortParts[0];
             Sort.Direction direction = Sort.Direction.fromString(sortParts[1]);
-            log.warn("{}, {}", field, direction);
 
             // chat_type과 title.keyword를 조합한 정렬
             if ("title".equals(field)) {  // 프론트에서 "title"로 정렬 요청 시
@@ -130,18 +129,18 @@ public class SearchService {
         Pageable pageable = PageRequest.of(page, size);
         Member author = memberRepository.findByUserId(userId)
                 .orElseThrow(() -> new RuntimeException("Member not found"));
-        log.info("{}, {}, {}", userId, page, size);
+
 
         BoolQueryBuilder boolQuery = QueryBuilders.boolQuery()
                 .filter(QueryBuilders.termQuery("member_id", author.getId()));
 
-        log.info("Query: {}", boolQuery.toString());
+
 
         Query query = new NativeSearchQueryBuilder()
                 .withQuery(boolQuery)
                 .withPageable(pageable)
                 .build();
-        log.info("Query: {}", query.toString());
+
 
         SearchHits<Diary> searchHits = elasticsearchOperations.search(query, Diary.class);
         if (searchHits.isEmpty()) {

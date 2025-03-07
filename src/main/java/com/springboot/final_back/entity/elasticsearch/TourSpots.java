@@ -2,9 +2,9 @@ package com.springboot.final_back.entity.elasticsearch;
 
 import com.springboot.final_back.dto.search.TourSpotListDto;
 import lombok.Data;
-import org.elasticsearch.common.geo.GeoPoint;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.elasticsearch.annotations.*;
+import org.springframework.data.elasticsearch.core.geo.GeoPoint;
 
 
 import java.time.LocalDateTime;
@@ -92,14 +92,6 @@ public class TourSpots {
     @Field(type = FieldType.Keyword, name = "first_image2")
     private String firstImage2;
 
-    // 등장 교과서 (시간 남으면 제거)
-    @Field(type = FieldType.Keyword, name = "book_tour")
-    private String bookTour;
-
-    // 저작권 관련... 인거같은데 (시간 남으면 제거)
-    @Field(type = FieldType.Keyword, name = "cpyrht_div_cd")
-    private String cpyrhtDivCd;
-
     // 전화번호
     @Field(type = FieldType.Keyword, name = "tel")
     private String tel;
@@ -116,9 +108,6 @@ public class TourSpots {
     @GeoPointField
     private GeoPoint location; // geo_point 타입 필드
 
-    // 지도 레벨 (시간 남으면 제거)
-    @Field(type = FieldType.Float, name = "m_level")
-    private Float mLevel;
 
     // 중첩 객체 관리를 위해 Nested 설정
     @Field(type = FieldType.Nested)
