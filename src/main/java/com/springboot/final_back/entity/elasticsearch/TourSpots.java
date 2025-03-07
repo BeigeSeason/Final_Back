@@ -56,10 +56,6 @@ public class TourSpots {
     @Field(type = FieldType.Keyword, name = "sigungu_code")
     private String sigunguCode;
 
-    // 우편번호(시간남으면 제거)
-    @Field(type = FieldType.Keyword, name = "zipcode")
-    private String zipcode;
-
     // 타입 아이디
     @Field(type = FieldType.Keyword, name = "content_type_id")
     private String contentTypeId;

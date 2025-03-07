@@ -84,6 +84,11 @@ public class Diary {
     @Field(type = FieldType.Float, name = "bookmark_count")
     private int bookmarkCount;
 
+    @Field(type = FieldType.Text, name = "area_code")
+    private String areaCode;
+
+    @Field(type = FieldType.Text, name = "sigungu_code")
+    private String sigunguCode;
 
     @Builder
     private Diary(String diaryId, String title, String region, LocalDate startDate, LocalDate endDate, List<String> tags, Float totalCost, String content, Long memberId, boolean isPublic) {
