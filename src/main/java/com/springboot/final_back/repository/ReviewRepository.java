@@ -2,6 +2,8 @@ package com.springboot.final_back.repository;
 
 import com.springboot.final_back.entity.mysql.Review;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -22,4 +24,6 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
 
     @Query("SELECT AVG(r.rating) FROM Review r WHERE r.tourSpotId = :tourSpotId")
     Double avgRatingByTourSpotId(@Param("tourSpotId") String tourSpotId);
+
+    Page<Review> findAllByTourSpotId(String tourSpotId, Pageable pageable);
 }
