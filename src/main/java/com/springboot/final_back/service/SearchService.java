@@ -70,9 +70,32 @@ public class SearchService {
     // 관광지 검색
     public Page<TourSpotListDto> searchTourSpots(int page, int size, String sort, String keyword,
                                                  String areaCode, String sigunguCode, String contentTypeId) {
-        Sort sortOrder = sort != null && !sort.isEmpty() ?
-                Sort.by(Sort.Direction.fromString(sort.split(",")[1]), sort.split(",")[0]) :
-                Sort.by(Sort.Direction.ASC, "title_sort");
+        // 기본 정렬: chat_type ASC, title.keyword ASC
+        Sort defaultSort = Sort.by(Sort.Direction.ASC, "char_type")
+                .and(Sort.by(Sort.Direction.ASC, "title.sort"));
+
+        log.info(sort);
+
+        // 프론트엔드에서 sort가 제공된 경우
+        Sort sortOrder;
+        if (sort != null && !sort.isEmpty()) {
+            String[] sortParts = sort.split(",");
+            String field = sortParts[0];
+            Sort.Direction direction = Sort.Direction.fromString(sortParts[1]);
+            log.warn("{}, {}", field, direction);
+
+            // chat_type과 title.keyword를 조합한 정렬
+            if ("title".equals(field)) {  // 프론트에서 "title"로 정렬 요청 시
+                sortOrder = Sort.by(direction, "char_type")
+                        .and(Sort.by(direction, "title.sort"));
+            } else {
+                // 다른 필드에 대한 정렬 요청은 그대로 처리
+                sortOrder = Sort.by(direction, field);
+            }
+        } else {
+            sortOrder = defaultSort;
+        }
+
         Pageable pageable = PageRequest.of(page, size, sortOrder);
 
         BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
@@ -126,7 +149,6 @@ public class SearchService {
             log.warn("No diaries found for userId: {}", userId);
             return Page.empty(pageable);
         }
-
 
 
         List<Diary> diaries = searchHits.getSearchHits().stream()
