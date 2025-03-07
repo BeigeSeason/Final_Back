@@ -2,14 +2,9 @@ package com.springboot.final_back.entity.elasticsearch;
 
 import com.springboot.final_back.dto.search.TourSpotListDto;
 import lombok.Data;
+import org.elasticsearch.common.geo.GeoPoint;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.elasticsearch.annotations.Document;
-import org.springframework.data.elasticsearch.annotations.Field;
-import org.springframework.data.elasticsearch.annotations.FieldType;
-import org.springframework.data.elasticsearch.annotations.DateFormat;
-import org.springframework.data.elasticsearch.annotations.InnerField;
-import org.springframework.data.elasticsearch.annotations.MultiField;
-
+import org.springframework.data.elasticsearch.annotations.*;
 
 
 import java.time.LocalDateTime;
@@ -22,7 +17,7 @@ public class TourSpots {
     @Id
     private String id;
 
-    @Field(name ="content_id" , type = FieldType.Keyword)
+    @Field(name = "content_id", type = FieldType.Keyword)
     private String contentId;
 
     // 주소
@@ -117,6 +112,10 @@ public class TourSpots {
     @Field(type = FieldType.Float, name = "map_y")
     private Float mapY;
 
+    // 좌표
+    @GeoPointField
+    private GeoPoint location; // geo_point 타입 필드
+
     // 지도 레벨 (시간 남으면 제거)
     @Field(type = FieldType.Float, name = "m_level")
     private Float mLevel;
@@ -128,15 +127,18 @@ public class TourSpots {
     @Field(type = FieldType.Float, name = "review_count")
     private int reviewCount;
 
-    @Field(type = FieldType.Double)
-    private double rating;
+    @Field(type = FieldType.Float, name = "rating")
+    private float rating;
+
+    @Field(type = FieldType.Double, name = "avg_rating")
+    private double avgRating;
 
     @Field(type = FieldType.Float, name = "bookmark_count")
     private int bookmarkCount;
 
     // detail 필드는 여기서밖에 사용하지 않기 때문에 엔티티 내부에 정의함
     @Data
-    public static class Detail{
+    public static class Detail {
         @Field(type = FieldType.Keyword)
         private List<String> images;
 
@@ -156,7 +158,7 @@ public class TourSpots {
         private String homepage;
     }
 
-    public TourSpotListDto convertToListDto(){
+    public TourSpotListDto convertToListDto() {
         return TourSpotListDto.builder()
                 .spotId(contentId)
                 .title(title)

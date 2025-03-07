@@ -24,7 +24,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -38,6 +37,7 @@ public class SearchService {
 
     // 제목으로 다이어리 검색
     public Page<DiarySearchListDto> searchByTitle(String keyword, int page, int size) {
+        // 가나다순, 북마크순, 최근작성순, 최근여행순, 여행경비 범위 지정
         Pageable pageable = PageRequest.of(page, size);
         BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
 
@@ -71,8 +71,7 @@ public class SearchService {
     public Page<TourSpotListDto> searchTourSpots(int page, int size, String sort, String keyword,
                                                  String areaCode, String sigunguCode, String contentTypeId) {
         // 기본 정렬: chat_type ASC, title.keyword ASC
-        Sort defaultSort = Sort.by(Sort.Direction.ASC, "char_type")
-                .and(Sort.by(Sort.Direction.ASC, "title.sort"));
+        Sort defaultSort = Sort.by(Sort.Direction.DESC, "_score");
 
         log.info(sort);
 
