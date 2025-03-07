@@ -1,6 +1,7 @@
 package com.springboot.final_back.service;
 
 import com.springboot.final_back.dto.ReviewReqDto;
+import com.springboot.final_back.dto.ReviewResDto;
 import com.springboot.final_back.entity.elasticsearch.TourSpots;
 import com.springboot.final_back.entity.mysql.Member;
 import com.springboot.final_back.entity.mysql.Review;
@@ -9,9 +10,13 @@ import com.springboot.final_back.repository.ReviewRepository;
 import com.springboot.final_back.repository.TourSpotsRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -102,6 +107,32 @@ public class ReviewService {
         }
     }
 
-//    public Page
+    public Page<ReviewResDto> getReviews(int page, int size, String tourSpotId) {
+        // 정렬 기준: createdAt 내림차순
+        Sort sort = Sort.by(Sort.Direction.DESC, "createdAt");
+        // Pageable 객체 생성
+        Pageable pageable = PageRequest.of(page, size, sort);
+        // Repository에서 Review 조회
+        Page<Review> reviews = reviewRepository.findAllByTourSpotId(tourSpotId, pageable);
+
+        // Review 리스트를 ReviewResDto 리스트로 변환
+        List<ReviewResDto> reviewResDtoList = reviews.stream()
+                .map(review -> {
+                    Member member = review.getMember();
+                    return ReviewResDto.builder()
+                            .id(review.getId())
+                            .memberId(member.getUserId())
+                            .nickname(member.getNickname())
+                            .profileImg(member.getImgPath())
+                            .createdAt(review.getCreatedAt())
+                            .rating(review.getRating())
+                            .content(review.getContent())
+                            .build();
+                })
+                .toList();
+
+        // Page 객체로 변환하여 반환
+        return new PageImpl<>(reviewResDtoList, pageable, reviews.getTotalElements());
+    }
 
 }

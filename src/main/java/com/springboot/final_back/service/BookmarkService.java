@@ -9,6 +9,7 @@ import com.springboot.final_back.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @Service
 @RequiredArgsConstructor
@@ -53,10 +54,11 @@ public class BookmarkService {
     }
 
     @Transactional
-    public boolean deleteBookmark(Long bookmarkId) {
+    public boolean deleteBookmark(String targetId, String userId) {
         try {
-            Bookmark bookmark = bookmarkRepository.findById(bookmarkId)
-                    .orElseThrow(() -> new RuntimeException("Bookmark not found"));
+            Member member = memberRepository.findByUserId(userId).orElseThrow(() -> new RuntimeException("존재하지 않는 유저"));
+
+            Bookmark bookmark = bookmarkRepository.findByMemberAndBookmarkedId(member, targetId).orElseThrow(() -> new RuntimeException("Bookmark not found"));
 
             if (bookmark.getType() == Type.DIARY) {
                 Diary diary = diaryRepository.findByDiaryId(bookmark.getBookmarkedId()).orElseThrow(() -> new RuntimeException("Diary not found"));

@@ -73,8 +73,6 @@ public class SearchService {
         // 기본 정렬: chat_type ASC, title.keyword ASC
         Sort defaultSort = Sort.by(Sort.Direction.DESC, "_score");
 
-        log.info(sort);
-
         // 프론트엔드에서 sort가 제공된 경우
         Sort sortOrder;
         if (sort != null && !sort.isEmpty()) {
