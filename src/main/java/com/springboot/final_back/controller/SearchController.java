@@ -23,9 +23,12 @@ public class SearchController {
 
     @GetMapping("/diary-list")
     public ResponseEntity<Page<DiarySearchListDto>> getDiaryList(@RequestParam(defaultValue = "0") int page,
-                                                           @RequestParam(defaultValue = "20") int size,
-                                                           @RequestParam(required = false) String keyword) {
-        return new ResponseEntity<>(searchService.searchByTitle(keyword, page, size), HttpStatus.OK);
+                                                                 @RequestParam(defaultValue = "20") int size,
+                                                                 @RequestParam(required = false) String keyword,
+                                                                 @RequestParam(required = false) String sort,
+                                                                 @RequestParam(defaultValue = "0") int lowCost,
+                                                                 @RequestParam(defaultValue = "0") int highCost) {
+        return new ResponseEntity<>(searchService.searchByTitle(page, size, keyword, sort, lowCost, highCost), HttpStatus.OK);
     }
 
     @GetMapping("/tour-list")

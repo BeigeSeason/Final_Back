@@ -49,8 +49,8 @@ public class ReviewBookmarkController {
 
     // 북마크 삭제
     @PostMapping("/delete-bookmark")
-    public ResponseEntity<Boolean> deleteBookmark(@RequestParam Long reviewId) {
-        return new ResponseEntity<>(bookmarkService.deleteBookmark(reviewId), HttpStatus.OK);
+    public ResponseEntity<Boolean> deleteBookmark(@RequestParam String targetId, @RequestParam String userId) {
+        return new ResponseEntity<>(bookmarkService.deleteBookmark(targetId, userId), HttpStatus.OK);
     }
 
     // 리뷰 조회
