@@ -10,6 +10,9 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -24,8 +27,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -36,18 +37,48 @@ public class SearchService {
     private final MemberRepository memberRepository;
 
     // 제목으로 다이어리 검색
-    public Page<DiarySearchListDto> searchByTitle(int page, int size, String keyword, String sort, int lowCost, int highCost) {
+    public Page<DiarySearchListDto> searchByTitle(int page, int size, String keyword, String sort,
+                                                  int minPrice, int maxPrice, String areaCode, String sigunguCode) {
         Sort defaultSort = Sort.by(Sort.Direction.DESC, "_score");
 
+        Sort sortOrder;
+        if (sort != null && !sort.isEmpty()) {
+            String[] split = sort.split(",");
+            String field = split[0];
+            Sort.Direction direction = Sort.Direction.fromString(split[1]);
+
+            sortOrder = Sort.by(direction, field);
+        } else {
+            sortOrder = defaultSort;
+        }
+
         // 가나다순, 북마크순, 최근작성순, 최근여행순, 여행경비 범위 지정
-        Pageable pageable = PageRequest.of(page, size);
+        Pageable pageable = PageRequest.of(page, size, sortOrder);
         BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
 
-        if (keyword == null || keyword.isEmpty()) {
+
+        boolean hasFilters = keyword != null || areaCode != null || sigunguCode != null || minPrice != 0 || maxPrice != 0;
+
+        if (!hasFilters) {
             boolQuery.must(QueryBuilders.matchAllQuery());
         } else {
-            boolQuery.must(QueryBuilders.matchQuery("title", keyword));
+            if (keyword != null && !keyword.isEmpty()) {
+                boolQuery.must(QueryBuilders.multiMatchQuery(keyword, "title", "content", "region"));
+            }
+            if (areaCode != null) boolQuery.filter(QueryBuilders.termQuery("area_code", areaCode));
+            if (sigunguCode != null) boolQuery.filter(QueryBuilders.termQuery("sigungu_code", sigunguCode));
+            if (minPrice != 0 && maxPrice != 0) {
+                boolQuery.filter(QueryBuilders.rangeQuery("total_cost").gte(minPrice).lte(maxPrice));
+            } else if (minPrice != 0) {
+                // 이상(초과는 gt())
+                boolQuery.filter(QueryBuilders.rangeQuery("total_cost").gte(minPrice));
+            } else if (maxPrice != 0) {
+                // 이하(미만은 lt())
+                boolQuery.filter(QueryBuilders.rangeQuery("total_cost").lte(maxPrice));
+            }
         }
+
+        boolQuery.filter(QueryBuilders.termQuery("is_public", true));
 
         Query query = new NativeSearchQueryBuilder()
                 .withQuery(boolQuery)
@@ -135,7 +166,6 @@ public class SearchService {
                 .filter(QueryBuilders.termQuery("member_id", author.getId()));
 
 
-
         Query query = new NativeSearchQueryBuilder()
                 .withQuery(boolQuery)
                 .withPageable(pageable)
@@ -193,12 +223,13 @@ public class SearchService {
         return diaries.stream()
                 .map(diary -> {
                     Member author = memberMap.get(diary.getMemberId());
+                    String plainContent = stripHtmlTags(diary.getContent());
                     return DiarySearchListDto.builder()
                             .diaryId(diary.getDiaryId())
                             .title(diary.getTitle())
-                            .contentSummary(diary.getContent().length() > 150 ?
-                                    diary.getContent().substring(0, 150) + "..." :
-                                    diary.getContent())
+                            .contentSummary(plainContent.length() > 150 ?
+                                    plainContent.substring(0, 150) + "..." :
+                                    plainContent)
                             .thumbnail(extractFirstImageSrc(diary.getContent()))
                             .writer(author.getNickname())
                             .writerImg(author.getImgPath() != null ? author.getImgPath() : null)
@@ -219,6 +250,31 @@ public class SearchService {
                 .collect(Collectors.toMap(Member::getId, member -> member));
     }
 
+    // Jsoup 통한 HTML 태그 벗기기
+    private String stripHtmlTags(String content) {
+        if (content == null) return "";
+        return Jsoup.parse(content).text().trim();
+    }
+
+    // Jsoup 통한 HTML 파싱
+    private String extractFirstImageSrc(String content) {
+        if (content == null || !content.contains("<img")) {
+            return null;
+        }
+        try {
+            Document doc = Jsoup.parse(content);
+            Element img = doc.selectFirst("img"); // 첫 번째 <img> 태그 선택
+            if (img != null) {
+                return img.attr("src"); // src 속성 반환
+            }
+            return null;
+        } catch (Exception e) {
+            log.warn("Failed to extract image src from content: {}", content, e);
+            return null;
+        }
+    }
+
+    /*
     // 정규표현식을 통한 HTML 파싱
     private String extractFirstImageSrc(String content) {
         if (content == null || !content.contains("<img")) {
@@ -235,5 +291,5 @@ public class SearchService {
             log.warn("Failed to extract image src from content: {}", content, e);
             return null;
         }
-    }
+    }*/
 }

@@ -26,9 +26,11 @@ public class SearchController {
                                                                  @RequestParam(defaultValue = "20") int size,
                                                                  @RequestParam(required = false) String keyword,
                                                                  @RequestParam(required = false) String sort,
-                                                                 @RequestParam(defaultValue = "0") int lowCost,
-                                                                 @RequestParam(defaultValue = "0") int highCost) {
-        return new ResponseEntity<>(searchService.searchByTitle(page, size, keyword, sort, lowCost, highCost), HttpStatus.OK);
+                                                                 @RequestParam(defaultValue = "0") int minPrice,
+                                                                 @RequestParam(defaultValue = "0") int maxPrice,
+                                                                 @RequestParam(required = false) String areaCode,
+                                                                 @RequestParam(required = false) String sigunguCode) {
+        return new ResponseEntity<>(searchService.searchByTitle(page, size, keyword, sort, minPrice, maxPrice, areaCode, sigunguCode), HttpStatus.OK);
     }
 
     @GetMapping("/tour-list")
