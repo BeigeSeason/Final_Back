@@ -22,4 +22,5 @@ public class TourSpotDetailDto {
     private String homepage;          // 홈페이지 (detailCommon1에서)
     private String useTime;           // 운영 시간 (detailIntro1에서)
     private String parking;           // 주차 정보 (detailIntro1에서)
+    private int bookmarkCount;        // 총 북마크 개수
 }

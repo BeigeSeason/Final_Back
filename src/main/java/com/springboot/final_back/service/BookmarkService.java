@@ -24,7 +24,6 @@ public class BookmarkService {
 
     @Transactional
     public boolean addBookmark(String targetId, String userId, String typeStr) {
-        log.error("targetId: {}, userId: {}", targetId, userId);
         try {
             Member member = memberRepository.findByUserId(userId)
                     .orElseThrow(() -> new RuntimeException("존재하지 않는 사용자"));
@@ -40,7 +39,6 @@ public class BookmarkService {
             if (bookmark.getType() == Type.DIARY) {
                 Diary diary = diaryRepository.findByDiaryId(bookmark.getBookmarkedId()).orElseThrow(() -> new RuntimeException("Diary not found"));
                 diary.setBookmarkCount(diary.getBookmarkCount() + 1);
-
                 diaryRepository.save(diary);
             } else {
                 TourSpots tourSpot = tourSpotsRepository.findByContentId(bookmark.getBookmarkedId()).orElseThrow(() -> new RuntimeException("Diary not found"));
@@ -66,6 +64,7 @@ public class BookmarkService {
                 diary.setBookmarkCount(diary.getBookmarkCount() - 1);
                 diaryRepository.save(diary);
             } else {
+                log.error("여기로 오는거지?");
                 TourSpots tourSpot = tourSpotsRepository.findByContentId(bookmark.getBookmarkedId()).orElseThrow(() -> new RuntimeException("Diary not found"));
                 tourSpot.setBookmarkCount(tourSpot.getBookmarkCount() - 1);
                 tourSpotsRepository.save(tourSpot);
