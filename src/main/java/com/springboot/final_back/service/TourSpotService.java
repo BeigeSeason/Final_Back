@@ -239,7 +239,7 @@ public class TourSpotService {
 
         Query query = new NativeSearchQueryBuilder()
                 .withQuery(QueryBuilders.matchAllQuery())
-                .withSort(geoSort)
+                .withSorts(geoSort)
                 .withPageable(pageable)
                 .build();
 
