@@ -102,7 +102,7 @@ public class SearchService {
 
     // 관광지 검색
     public Page<TourSpotListDto> searchTourSpots(int page, int size, String sort, String keyword,
-                                                 String areaCode, String sigunguCode, String contentTypeId) {
+                                                 String areaCode, String sigunguCode, String classifiedTypeId) {
         // 기본 정렬: chat_type ASC, title.keyword ASC
         Sort defaultSort = Sort.by(Sort.Direction.DESC, "_score");
 
@@ -128,7 +128,7 @@ public class SearchService {
         Pageable pageable = PageRequest.of(page, size, sortOrder);
 
         BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
-        boolean hasFilters = keyword != null || areaCode != null || sigunguCode != null || contentTypeId != null;
+        boolean hasFilters = keyword != null || areaCode != null || sigunguCode != null || classifiedTypeId != null;
         if (!hasFilters) {
             log.debug("No filters provided, performing full search");
             boolQuery.must(QueryBuilders.matchAllQuery());
@@ -138,7 +138,7 @@ public class SearchService {
             }
             if (areaCode != null) boolQuery.filter(QueryBuilders.termQuery("area_code", areaCode));
             if (sigunguCode != null) boolQuery.filter(QueryBuilders.termQuery("sigungu_code", sigunguCode));
-            if (contentTypeId != null) boolQuery.filter(QueryBuilders.termQuery("content_type_id", contentTypeId));
+            if (classifiedTypeId != null) boolQuery.filter(QueryBuilders.termQuery("classified_type_id", classifiedTypeId));
         }
 
         Query query = new NativeSearchQueryBuilder()

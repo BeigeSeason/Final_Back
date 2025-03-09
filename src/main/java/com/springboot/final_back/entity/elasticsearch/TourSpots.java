@@ -60,6 +60,9 @@ public class TourSpots {
     @Field(type = FieldType.Keyword, name = "content_type_id")
     private String contentTypeId;
 
+    @Field(type = FieldType.Keyword, name = "classified_type_id")
+    private String classifiedTypeId;
+
     // 대분류
     @Field(type = FieldType.Keyword)
     private String cat1;
