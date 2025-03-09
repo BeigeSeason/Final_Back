@@ -61,4 +61,16 @@ public class SearchController {
         return ResponseEntity.ok(searchService.getOtherUserDiaryList(userId, page, size));
     }
 
+    // 내가 북마크한 다이어리 목록 조회
+    @GetMapping("/my-bookmarked-diaries")
+    public ResponseEntity<Page<DiarySearchListDto>> getBookmarkedDiaries(@RequestParam String userId, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int size) {
+        return ResponseEntity.ok(searchService.getBookmarkedDiaries(userId, page, size));
+    }
+
+    // 내가 북마크한 관광지 목록 조회
+    @GetMapping("/my-bookmarked-tourspots")
+    public ResponseEntity<Page<TourSpotListDto>> getBookmarkedTourSpots(@RequestParam String userId, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int size) {
+        return ResponseEntity.ok(searchService.getBookmarkedTourSpots(userId, page, size));
+    }
+
 }

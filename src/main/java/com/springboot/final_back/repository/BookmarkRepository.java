@@ -1,7 +1,10 @@
 package com.springboot.final_back.repository;
 
+import com.springboot.final_back.constant.Type;
 import com.springboot.final_back.entity.mysql.Bookmark;
 import com.springboot.final_back.entity.mysql.Member;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -20,4 +23,5 @@ public interface BookmarkRepository extends JpaRepository<Bookmark, Long> {
     List<Object[]> findBookmarkCountsByTourSpotIds(@Param("ids") List<String> tourSpotIds);
 
     Optional<Bookmark> findByMemberAndBookmarkedId(Member member, String bookmarkedId);
+    Page<Bookmark> findByMemberAndType(Member member, Type type, Pageable pageable);
 }

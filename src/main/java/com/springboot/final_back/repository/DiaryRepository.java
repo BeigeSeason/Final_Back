@@ -19,6 +19,7 @@ public interface DiaryRepository extends ElasticsearchRepository<Diary, String> 
     Page<Diary> findByMemberId(Long memberId, Pageable pageable);
     Page<Diary> findByMemberIdAndIsPublicTrue(Long memberId, Pageable pageable);
     Optional<Diary> findByDiaryId(String diaryId);
+    List<Diary> findByDiaryIdIn(List<String> diaryIds);
 
     // 월별 일지 통계
     @Query("SELECT MONTH(d.createdTime), COUNT(d) " +

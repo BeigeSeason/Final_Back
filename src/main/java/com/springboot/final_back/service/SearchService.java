@@ -1,11 +1,16 @@
 package com.springboot.final_back.service;
 
+import com.springboot.final_back.constant.Type;
 import com.springboot.final_back.dto.diary.DiarySearchListDto;
 import com.springboot.final_back.dto.tourspot.TourSpotListDto;
 import com.springboot.final_back.entity.elasticsearch.Diary;
 import com.springboot.final_back.entity.elasticsearch.TourSpots;
+import com.springboot.final_back.entity.mysql.Bookmark;
 import com.springboot.final_back.entity.mysql.Member;
+import com.springboot.final_back.repository.BookmarkRepository;
+import com.springboot.final_back.repository.DiaryRepository;
 import com.springboot.final_back.repository.MemberRepository;
+import com.springboot.final_back.repository.TourSpotsRepository;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.index.query.BoolQueryBuilder;
@@ -25,9 +30,12 @@ import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilde
 import org.springframework.data.elasticsearch.core.query.Query;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import static org.elasticsearch.index.query.QueryBuilders.*;
 
 @Slf4j
 @Service
@@ -35,6 +43,9 @@ import java.util.stream.Collectors;
 public class SearchService {
     private final ElasticsearchOperations elasticsearchOperations;
     private final MemberRepository memberRepository;
+    private final BookmarkRepository bookmarkRepository;
+    private final DiaryRepository diaryRepository;
+    private final TourSpotsRepository tourSpotsRepository;
 
     // 제목으로 다이어리 검색
     public Page<DiarySearchListDto> searchByTitle(int page, int size, String keyword, String sort,
@@ -54,7 +65,7 @@ public class SearchService {
 
         // 가나다순, 북마크순, 최근작성순, 최근여행순, 여행경비 범위 지정
         Pageable pageable = PageRequest.of(page, size, sortOrder);
-        BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
+        BoolQueryBuilder boolQuery = boolQuery();
 
 
         boolean hasFilters = keyword != null || areaCode != null || sigunguCode != null || minPrice != 0 || maxPrice != 0;
@@ -65,8 +76,8 @@ public class SearchService {
             if (keyword != null && !keyword.isEmpty()) {
                 boolQuery.must(QueryBuilders.multiMatchQuery(keyword, "title", "content", "region"));
             }
-            if (areaCode != null) boolQuery.filter(QueryBuilders.termQuery("area_code", areaCode));
-            if (sigunguCode != null) boolQuery.filter(QueryBuilders.termQuery("sigungu_code", sigunguCode));
+            if (areaCode != null) boolQuery.filter(termQuery("area_code", areaCode));
+            if (sigunguCode != null) boolQuery.filter(termQuery("sigungu_code", sigunguCode));
             if (minPrice != 0 && maxPrice != 0) {
                 boolQuery.filter(QueryBuilders.rangeQuery("total_cost").gte(minPrice).lte(maxPrice));
             } else if (minPrice != 0) {
@@ -78,7 +89,7 @@ public class SearchService {
             }
         }
 
-        boolQuery.filter(QueryBuilders.termQuery("is_public", true));
+        boolQuery.filter(termQuery("is_public", true));
 
         Query query = new NativeSearchQueryBuilder()
                 .withQuery(boolQuery)
@@ -127,7 +138,7 @@ public class SearchService {
 
         Pageable pageable = PageRequest.of(page, size, sortOrder);
 
-        BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
+        BoolQueryBuilder boolQuery = boolQuery();
         boolean hasFilters = keyword != null || areaCode != null || sigunguCode != null || classifiedTypeId != null;
         if (!hasFilters) {
             log.debug("No filters provided, performing full search");
@@ -136,9 +147,9 @@ public class SearchService {
             if (keyword != null && !keyword.isEmpty()) {
                 boolQuery.must(QueryBuilders.multiMatchQuery(keyword, "title", "addr1"));
             }
-            if (areaCode != null) boolQuery.filter(QueryBuilders.termQuery("area_code", areaCode));
-            if (sigunguCode != null) boolQuery.filter(QueryBuilders.termQuery("sigungu_code", sigunguCode));
-            if (classifiedTypeId != null) boolQuery.filter(QueryBuilders.termQuery("classified_type_id", classifiedTypeId));
+            if (areaCode != null) boolQuery.filter(termQuery("area_code", areaCode));
+            if (sigunguCode != null) boolQuery.filter(termQuery("sigungu_code", sigunguCode));
+            if (classifiedTypeId != null) boolQuery.filter(termQuery("classified_type_id", classifiedTypeId));
         }
 
         Query query = new NativeSearchQueryBuilder()
@@ -162,8 +173,8 @@ public class SearchService {
                 .orElseThrow(() -> new RuntimeException("Member not found"));
 
 
-        BoolQueryBuilder boolQuery = QueryBuilders.boolQuery()
-                .filter(QueryBuilders.termQuery("member_id", author.getId()));
+        BoolQueryBuilder boolQuery = boolQuery()
+                .filter(termQuery("member_id", author.getId()));
 
 
         Query query = new NativeSearchQueryBuilder()
@@ -194,9 +205,9 @@ public class SearchService {
         Member author = memberRepository.findByUserId(userId)
                 .orElseThrow(() -> new RuntimeException("Member not found"));
 
-        BoolQueryBuilder boolQuery = QueryBuilders.boolQuery()
-                .filter(QueryBuilders.termQuery("member_id", author.getId()))
-                .filter(QueryBuilders.termQuery("is_public", true));
+        BoolQueryBuilder boolQuery = boolQuery()
+                .filter(termQuery("member_id", author.getId()))
+                .filter(termQuery("is_public", true));
 
         Query query = new NativeSearchQueryBuilder()
                 .withQuery(boolQuery)
@@ -215,6 +226,60 @@ public class SearchService {
         Map<Long, Member> memberMap = Map.of(author.getId(), author); // 단일 멤버만 필요
 
         List<DiarySearchListDto> dtoList = mapToDiaryDtoList(diaries, memberMap);
+        return new PageImpl<>(dtoList, pageable, searchHits.getTotalHits());
+    }
+
+    public Page<DiarySearchListDto> getBookmarkedDiaries(String userId, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+
+        Member member = memberRepository.findByUserId(userId).orElseThrow(() -> new RuntimeException("Member not found"));
+
+        Page<Bookmark> bookmarkedDiariesPage = bookmarkRepository.findByMemberAndType(member, Type.DIARY, pageable);
+        List<String> diaryIds = bookmarkedDiariesPage.getContent().stream()
+                .map(Bookmark::getBookmarkedId)
+                .collect(Collectors.toList());
+
+        Query query = new NativeSearchQueryBuilder()
+                .withQuery(boolQuery()
+                        .filter(termsQuery("diary_id", diaryIds)) // 북마크된 ID 필터링
+                        .filter(termQuery("is_public", true)))
+//                .withPageable(PageRequest.of(page, size, Sort.by("createdTime").descending()))
+                .withPageable(pageable)
+                .build();
+
+        SearchHits<Diary> searchHits = elasticsearchOperations.search(query, Diary.class);
+
+        List<Diary> diaries = searchHits.getSearchHits().stream()
+                .map(SearchHit::getContent)
+                .collect(Collectors.toList());
+        Map<Long, Member> memberMap = Collections.singletonMap(member.getId(), member);
+        List<DiarySearchListDto> dtoList = mapToDiaryDtoList(diaries, memberMap);
+
+        return new PageImpl<>(dtoList, pageable, searchHits.getTotalHits());
+    }
+
+    public Page<TourSpotListDto> getBookmarkedTourSpots(String userId, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+
+        Member member = memberRepository.findByUserId(userId).orElseThrow(() -> new RuntimeException("Member not found"));
+
+        Page<Bookmark> bookmarkedTourSpotsPage = bookmarkRepository.findByMemberAndType(member, Type.TOURSPOT, pageable);
+        List<String> tourSpotIds = bookmarkedTourSpotsPage.getContent().stream()
+                .map(Bookmark::getBookmarkedId)
+                .collect(Collectors.toList());
+
+        Query query = new NativeSearchQueryBuilder()
+                .withQuery(termsQuery("content_id", tourSpotIds)) // contentId로 필터링
+                .withPageable(pageable)
+                .build();
+
+        SearchHits<TourSpots> searchHits = elasticsearchOperations.search(query, TourSpots.class);
+
+        List<TourSpotListDto> dtoList = searchHits.getSearchHits().stream()
+                .map(SearchHit::getContent)
+                .map(TourSpots::convertToListDto)
+                .collect(Collectors.toList());
+
         return new PageImpl<>(dtoList, pageable, searchHits.getTotalHits());
     }
 

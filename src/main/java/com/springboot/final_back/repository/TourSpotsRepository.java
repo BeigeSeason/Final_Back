@@ -1,5 +1,6 @@
 package com.springboot.final_back.repository;
 
+import com.springboot.final_back.entity.elasticsearch.Diary;
 import com.springboot.final_back.entity.elasticsearch.TourSpots;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -15,6 +16,7 @@ public interface TourSpotsRepository extends ElasticsearchRepository<TourSpots, 
     Page<TourSpots> findByTitleOrAddr1(String title, String addr1, Pageable pageable);
 
     Optional<TourSpots> findByContentId(String contentId);
+    List<TourSpots> findByContentIdIn(List<String> tourSpotIds);
 
     @Query("{\"match_all\": {}}")
     List<String> findAllContentIds();

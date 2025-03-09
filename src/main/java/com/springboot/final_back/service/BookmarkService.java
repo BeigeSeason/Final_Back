@@ -1,6 +1,7 @@
 package com.springboot.final_back.service;
 
 import com.springboot.final_back.constant.Type;
+import com.springboot.final_back.dto.diary.DiarySearchListDto;
 import com.springboot.final_back.entity.elasticsearch.Diary;
 import com.springboot.final_back.entity.elasticsearch.TourSpots;
 import com.springboot.final_back.entity.mysql.Bookmark;
@@ -8,9 +9,16 @@ import com.springboot.final_back.entity.mysql.Member;
 import com.springboot.final_back.repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestParam;
+
+import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
