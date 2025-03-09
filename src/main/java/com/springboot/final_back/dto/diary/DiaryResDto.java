@@ -1,4 +1,4 @@
-package com.springboot.final_back.dto;
+package com.springboot.final_back.dto.diary;
 
 import com.springboot.final_back.entity.elasticsearch.Diary;
 import lombok.AllArgsConstructor;
@@ -9,7 +9,6 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Set;
 
 @Data @Builder
 @NoArgsConstructor

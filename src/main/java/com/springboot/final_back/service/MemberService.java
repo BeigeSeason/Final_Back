@@ -1,7 +1,7 @@
 package com.springboot.final_back.service;
 
-import com.springboot.final_back.dto.MemberReqDto;
-import com.springboot.final_back.dto.MemberResDto;
+import com.springboot.final_back.dto.Auth.MemberReqDto;
+import com.springboot.final_back.dto.Auth.MemberResDto;
 import com.springboot.final_back.entity.mysql.Member;
 import com.springboot.final_back.repository.MemberRepository;
 import lombok.AllArgsConstructor;

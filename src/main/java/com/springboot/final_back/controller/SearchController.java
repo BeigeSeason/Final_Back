@@ -1,8 +1,8 @@
 package com.springboot.final_back.controller;
 
-import com.springboot.final_back.dto.TourSpotDetailDto;
-import com.springboot.final_back.dto.search.DiarySearchListDto;
-import com.springboot.final_back.dto.search.TourSpotListDto;
+import com.springboot.final_back.dto.tourspot.TourSpotDetailDto;
+import com.springboot.final_back.dto.diary.DiarySearchListDto;
+import com.springboot.final_back.dto.tourspot.TourSpotListDto;
 import com.springboot.final_back.service.SearchService;
 import com.springboot.final_back.service.TourSpotService;
 import lombok.RequiredArgsConstructor;

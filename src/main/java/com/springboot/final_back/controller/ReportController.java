@@ -1,11 +1,9 @@
 package com.springboot.final_back.controller;
 
-import com.springboot.final_back.dto.ReportReqDto;
-import com.springboot.final_back.dto.ReportResDto;
+import com.springboot.final_back.dto.report.ReportReqDto;
 import com.springboot.final_back.service.ReportService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 

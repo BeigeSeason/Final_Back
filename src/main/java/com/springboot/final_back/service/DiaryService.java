@@ -1,7 +1,7 @@
 package com.springboot.final_back.service;
 
-import com.springboot.final_back.dto.DiaryReqDto;
-import com.springboot.final_back.dto.DiaryResDto;
+import com.springboot.final_back.dto.diary.DiaryReqDto;
+import com.springboot.final_back.dto.diary.DiaryResDto;
 import com.springboot.final_back.entity.elasticsearch.Diary;
 import com.springboot.final_back.entity.mysql.Member;
 import com.springboot.final_back.repository.DiaryRepository;
@@ -12,7 +12,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.Map;
 
 @Slf4j
 @Service

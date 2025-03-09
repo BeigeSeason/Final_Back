@@ -1,7 +1,7 @@
 package com.springboot.final_back.jwt;
 
 
-import com.springboot.final_back.dto.TokenDto;
+import com.springboot.final_back.dto.Auth.TokenDto;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;

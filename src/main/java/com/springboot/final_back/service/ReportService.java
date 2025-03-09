@@ -3,8 +3,8 @@ package com.springboot.final_back.service;
 
 import com.springboot.final_back.constant.State;
 import com.springboot.final_back.constant.Type;
-import com.springboot.final_back.dto.ReportReqDto;
-import com.springboot.final_back.dto.ReportResDto;
+import com.springboot.final_back.dto.report.ReportReqDto;
+import com.springboot.final_back.dto.report.ReportResDto;
 import com.springboot.final_back.entity.mysql.Member;
 import com.springboot.final_back.entity.mysql.Report;
 import com.springboot.final_back.entity.mysql.Review;
@@ -18,8 +18,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-
-import java.util.Optional;
 
 @Slf4j
 @Service

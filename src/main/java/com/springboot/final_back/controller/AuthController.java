@@ -1,9 +1,9 @@
 package com.springboot.final_back.controller;
 
 import com.springboot.final_back.dto.LoginDto;
-import com.springboot.final_back.dto.MemberReqDto;
-import com.springboot.final_back.dto.SignupDto;
-import com.springboot.final_back.dto.TokenDto;
+import com.springboot.final_back.dto.Auth.MemberReqDto;
+import com.springboot.final_back.dto.Auth.SignupDto;
+import com.springboot.final_back.dto.Auth.TokenDto;
 import com.springboot.final_back.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

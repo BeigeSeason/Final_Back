@@ -1,7 +1,7 @@
 //package com.springboot.final_back.schedule;
 //
 //import com.springboot.final_back.constant.TourConstants;
-//import com.springboot.final_back.dto.search.TourSpotStats;
+//import com.springboot.final_back.dto.tourspot.TourSpotStats;
 //import com.springboot.final_back.entity.elasticsearch.TourSpots;
 //import com.springboot.final_back.repository.BookmarkRepository;
 //import com.springboot.final_back.repository.ReviewRepository;

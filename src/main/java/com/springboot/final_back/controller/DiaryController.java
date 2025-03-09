@@ -1,7 +1,7 @@
 package com.springboot.final_back.controller;
 
-import com.springboot.final_back.dto.DiaryReqDto;
-import com.springboot.final_back.dto.DiaryResDto;
+import com.springboot.final_back.dto.diary.DiaryReqDto;
+import com.springboot.final_back.dto.diary.DiaryResDto;
 import com.springboot.final_back.service.DiaryService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

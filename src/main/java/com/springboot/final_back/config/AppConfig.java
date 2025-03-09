@@ -1,6 +1,6 @@
 package com.springboot.final_back.config;
 
-import com.springboot.final_back.dto.search.TourSpotStats;
+import com.springboot.final_back.dto.tourspot.TourSpotStats;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;

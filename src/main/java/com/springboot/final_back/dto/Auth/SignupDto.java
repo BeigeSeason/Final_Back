@@ -1,4 +1,4 @@
-package com.springboot.final_back.dto;
+package com.springboot.final_back.dto.Auth;
 
 import com.springboot.final_back.entity.mysql.Member;
 import lombok.*;

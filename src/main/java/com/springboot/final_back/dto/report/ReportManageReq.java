@@ -1,4 +1,4 @@
-package com.springboot.final_back.dto;
+package com.springboot.final_back.dto.report;
 
 import lombok.*;
 

@@ -2,8 +2,8 @@ package com.springboot.final_back.service;
 
 import com.springboot.final_back.constant.MemberRole;
 import com.springboot.final_back.constant.State;
-import com.springboot.final_back.dto.MemberResDto;
-import com.springboot.final_back.dto.ReportManageReq;
+import com.springboot.final_back.dto.Auth.MemberResDto;
+import com.springboot.final_back.dto.report.ReportManageReq;
 import com.springboot.final_back.entity.mysql.Ban;
 import com.springboot.final_back.entity.mysql.Member;
 import com.springboot.final_back.entity.mysql.Report;
@@ -24,9 +24,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service

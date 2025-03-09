@@ -1,4 +1,4 @@
-package com.springboot.final_back.dto;
+package com.springboot.final_back.dto.report;
 
 import com.springboot.final_back.constant.State;
 import com.springboot.final_back.entity.mysql.Member;

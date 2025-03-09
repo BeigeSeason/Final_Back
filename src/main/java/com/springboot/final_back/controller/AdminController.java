@@ -1,9 +1,9 @@
 package com.springboot.final_back.controller;
 
 import com.springboot.final_back.dto.BanReqDto;
-import com.springboot.final_back.dto.MemberResDto;
-import com.springboot.final_back.dto.ReportManageReq;
-import com.springboot.final_back.dto.ReportResDto;
+import com.springboot.final_back.dto.Auth.MemberResDto;
+import com.springboot.final_back.dto.report.ReportManageReq;
+import com.springboot.final_back.dto.report.ReportResDto;
 import com.springboot.final_back.service.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

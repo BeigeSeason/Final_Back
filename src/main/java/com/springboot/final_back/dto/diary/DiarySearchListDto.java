@@ -1,4 +1,4 @@
-package com.springboot.final_back.dto.search;
+package com.springboot.final_back.dto.diary;
 
 import lombok.*;
 

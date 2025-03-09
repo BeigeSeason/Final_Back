@@ -1,7 +1,7 @@
 package com.springboot.final_back.entity.mysql;
 
 import com.springboot.final_back.constant.MemberRole;
-import com.springboot.final_back.dto.MemberResDto;
+import com.springboot.final_back.dto.Auth.MemberResDto;
 import lombok.*;
 
 import javax.persistence.*;

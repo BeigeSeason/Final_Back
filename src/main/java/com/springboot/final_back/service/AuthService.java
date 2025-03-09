@@ -1,6 +1,9 @@
 package com.springboot.final_back.service;
 
 import com.springboot.final_back.dto.*;
+import com.springboot.final_back.dto.Auth.MemberReqDto;
+import com.springboot.final_back.dto.Auth.SignupDto;
+import com.springboot.final_back.dto.Auth.TokenDto;
 import com.springboot.final_back.entity.mysql.Member;
 import com.springboot.final_back.entity.mysql.RefreshToken;
 import com.springboot.final_back.exception.NotMemberException;
@@ -12,7 +15,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
