@@ -41,10 +41,10 @@ public class ReviewBookmarkController {
 
     // 북마크 추가
     @PostMapping("/add-bookmark")
-    public ResponseEntity<Boolean> addBookmark(@RequestParam String target,
+    public ResponseEntity<Boolean> addBookmark(@RequestParam String targetId,
                                                @RequestParam String userId,
                                                @RequestParam String type) {
-        return new ResponseEntity<>(bookmarkService.addBookmark(target, userId, type), HttpStatus.OK);
+        return new ResponseEntity<>(bookmarkService.addBookmark(targetId, userId, type), HttpStatus.OK);
     }
 
     // 북마크 삭제
@@ -53,8 +53,11 @@ public class ReviewBookmarkController {
         return new ResponseEntity<>(bookmarkService.deleteBookmark(targetId, userId), HttpStatus.OK);
     }
 
-    // 내가 북마크 했는가
-//    @GetMapping("/my-bookmark")
+    // 내가 북마크 여부 조회
+    @GetMapping("/my-bookmark")
+    public ResponseEntity<Boolean> isBookmarked(@RequestParam String targetId, @RequestParam String userId) {
+        return ResponseEntity.ok(bookmarkService.isBookmarked(targetId, userId));
+    }
 
 
     // 리뷰 조회

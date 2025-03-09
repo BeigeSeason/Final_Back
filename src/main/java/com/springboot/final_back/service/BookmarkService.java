@@ -7,12 +7,14 @@ import com.springboot.final_back.entity.mysql.Bookmark;
 import com.springboot.final_back.entity.mysql.Member;
 import com.springboot.final_back.repository.*;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class BookmarkService {
     private final BookmarkRepository bookmarkRepository;
     private final TourSpotsRepository tourSpotsRepository;
@@ -22,6 +24,7 @@ public class BookmarkService {
 
     @Transactional
     public boolean addBookmark(String targetId, String userId, String typeStr) {
+        log.error("targetId: {}, userId: {}", targetId, userId);
         try {
             Member member = memberRepository.findByUserId(userId)
                     .orElseThrow(() -> new RuntimeException("존재하지 않는 사용자"));
@@ -49,8 +52,6 @@ public class BookmarkService {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-
-
     }
 
     @Transactional
@@ -77,4 +78,8 @@ public class BookmarkService {
         }
     }
 
+    public boolean isBookmarked(String targetId, String userId) {
+        Member member = memberRepository.findByUserId(userId).orElseThrow(() -> new RuntimeException("존재하지 않는 유저"));
+        return bookmarkRepository.findByMemberAndBookmarkedId(member, targetId).isPresent();
+    }
 }
