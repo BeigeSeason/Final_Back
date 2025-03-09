@@ -1,6 +1,7 @@
-package com.springboot.final_back.dto;
+package com.springboot.final_back.dto.tourspot;
 
 import lombok.*;
+import org.springframework.data.domain.Page;
 
 import java.util.List;
 
@@ -23,4 +24,6 @@ public class TourSpotDetailDto {
     private String useTime;           // 운영 시간 (detailIntro1에서)
     private String parking;           // 주차 정보 (detailIntro1에서)
     private int bookmarkCount;        // 총 북마크 개수
+
+    private Page<TourSpotListDto> nearSpots; // 가까운 여행지 10개
 }

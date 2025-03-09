@@ -3,22 +3,35 @@ package com.springboot.final_back.service;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.springboot.final_back.constant.TourConstants;
-import com.springboot.final_back.dto.TourSpotDetailDto;
-import com.springboot.final_back.dto.search.TourSpotStats;
+import com.springboot.final_back.dto.tourspot.TourSpotDetailDto;
+import com.springboot.final_back.dto.tourspot.TourSpotListDto;
+import com.springboot.final_back.dto.tourspot.TourSpotStats;
 import com.springboot.final_back.entity.elasticsearch.TourSpots;
 import com.springboot.final_back.repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.elasticsearch.common.unit.DistanceUnit;
+import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.search.sort.GeoDistanceSortBuilder;
+import org.elasticsearch.search.sort.SortBuilders;
+import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
+import org.springframework.data.elasticsearch.core.SearchHit;
+import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.data.elasticsearch.core.document.Document;
+import org.springframework.data.elasticsearch.core.geo.GeoPoint;
 import org.springframework.data.elasticsearch.core.mapping.IndexCoordinates;
+import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilder;
+import org.springframework.data.elasticsearch.core.query.Query;
 import org.springframework.data.elasticsearch.core.query.UpdateQuery;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.RestTemplate;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -199,6 +212,7 @@ public class TourSpotService {
         }
     }
 
+    // 캐싱(레디스의 잔재)
     public void cacheTourSpotStats(String tourSpotId) {
         TourSpotStats stats = fetchStatsFromMySQL(tourSpotId);
         String cacheKey = TourConstants.TOUR_SPOT_STATS_PREFIX + tourSpotId;
@@ -214,6 +228,34 @@ public class TourSpotService {
                 avgRating != null ? avgRating : 0.0, bookmarkCount != null ? bookmarkCount : 0);
     }
 
+    // GeoPoint로 가까운 TourSpots 10개 가져오기
+    public Page<TourSpotListDto> findNearestTourSpots(GeoPoint point) {
+        Pageable pageable = PageRequest.of(0, 10);
+
+        // GeoDistance 정렬 설정
+        GeoDistanceSortBuilder geoSort = SortBuilders.geoDistanceSort("location", point.getLat(), point.getLon())
+                .order(SortOrder.ASC)
+                .unit(DistanceUnit.KILOMETERS);
+
+        Query query = new NativeSearchQueryBuilder()
+                .withQuery(QueryBuilders.matchAllQuery())
+                .withSort(geoSort)
+                .withPageable(pageable)
+                .build();
+
+        SearchHits<TourSpots> searchHits = elasticsearchOperations.search(query, TourSpots.class);
+        if (searchHits.isEmpty()) {
+            log.debug("No tour spots found near lat: {}, lon: {}", point.getLat(), point.getLon());
+            return Page.empty(pageable);
+        }
+
+        List<TourSpotListDto> dtoList = searchHits.getSearchHits().stream()
+                .map(this::mapToMinimalDto)
+                .collect(Collectors.toList());
+
+        return new PageImpl<>(dtoList, pageable, searchHits.getTotalHits());
+    }
+
     private TourSpotDetailDto convertToDto(TourSpots tourSpot, TourSpots.Detail detail) {
         return TourSpotDetailDto.builder()
                 .contentId(tourSpot.getContentId())
@@ -227,6 +269,18 @@ public class TourSpotService {
                 .parking(detail.getParking())
                 .mapX(tourSpot.getMapX())
                 .mapY(tourSpot.getMapY())
+                .nearSpots(findNearestTourSpots(tourSpot.getLocation()))
+                .build();
+    }
+
+    // TourSpots를 최소 필드만 포함한 TourSpotListDto로 변환
+    private TourSpotListDto mapToMinimalDto(SearchHit<TourSpots> hit) {
+        TourSpots tourSpot = hit.getContent();
+
+        return TourSpotListDto.builder()
+                .spotId(tourSpot.getContentId())    // TourSpots의 spotId 필드
+                .title(tourSpot.getTitle())      // TourSpots의 title 필드
+                .thumbnail(tourSpot.getFirstImage()) // TourSpots의 thumbnail 필드
                 .build();
     }
 }

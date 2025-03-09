@@ -1,6 +1,6 @@
 package com.springboot.final_back.entity.elasticsearch;
 
-import com.springboot.final_back.dto.search.TourSpotListDto;
+import com.springboot.final_back.dto.tourspot.TourSpotListDto;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.elasticsearch.annotations.*;
@@ -106,7 +106,6 @@ public class TourSpots {
     // 좌표
     @GeoPointField
     private GeoPoint location; // geo_point 타입 필드
-
 
     // 중첩 객체 관리를 위해 Nested 설정
     @Field(type = FieldType.Nested)
