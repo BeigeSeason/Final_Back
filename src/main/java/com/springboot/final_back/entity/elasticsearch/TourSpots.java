@@ -151,6 +151,12 @@ public class TourSpots {
                 .title(title)
                 .addr(addr1)
                 .thumbnail(firstImage)
+                .cat1(cat1)
+                .cat2(cat2)
+                .cat3(cat3)
+                .reviewCount(reviewCount)
+                .avgRating(avgRating)
+                .bookmarkCount(bookmarkCount)
                 .build();
     }
 }
