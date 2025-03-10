@@ -38,10 +38,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -67,6 +64,17 @@ public class TourSpotService {
     private static final String BASE_URL = "https://apis.data.go.kr/B551011/KorService1";
     private static final String INDEX_NAME = "tour_spots";
 
+    // contentTypeId에 따른 infoCenter 접미사 매핑 (상수)
+    private static final Map<String, String> INFO_CENTER_SUFFIX;
+
+    static {
+        INFO_CENTER_SUFFIX = Map.of(
+                "39", "food",
+                "38", "shopping",
+                "32", "lodging",
+                "14", "culture"); // 불변 Map으로 설정
+    }
+
     public TourSpotDetailDto getTourSpotDetail(String tourSpotId) {
         try {
             Optional<TourSpots> tourSpotOpt = tourSpotsRepository.findByContentId(tourSpotId);
@@ -79,7 +87,7 @@ public class TourSpotService {
                 if (detail != null) {
                     // 썸네일을 이미지 목록에 포함시켜 전송
                     if (!tourSpot.getFirstImage().isEmpty()) detail.getImages().add(0, tourSpot.getFirstImage());
-                    log.info(detail.getImages().toString());
+                    log.info(tourSpot.getDetail().getHomepage());
                     return convertToDto(tourSpot, detail);
                 }
 
@@ -91,6 +99,8 @@ public class TourSpotService {
                 detailDto.setAddr1(tourSpot.getAddr1());
                 detailDto.setMapX(tourSpot.getMapX());
                 detailDto.setMapY(tourSpot.getMapY());
+
+                log.info(tourSpot.toString());
                 return detailDto;
             } else {
                 throw new RuntimeException("해당 관광지 데이터가 없습니다: " + tourSpotId);
@@ -104,6 +114,8 @@ public class TourSpotService {
     // 여행지 상세정보 존재하지 않을 시 Api 요청
     private TourSpotDetailDto fetchDetailFromApi(String contentId, String contentTypeId) {
         try {
+
+
             // 1. detailCommon1 호출
             String commonUrl = BASE_URL + "/detailCommon1?MobileOS=ETC&MobileApp=Final_test&_type=json" +
                     "&contentId=" + contentId + "&defaultYN=Y&overviewYN=Y&serviceKey=" + serviceKey1;
@@ -119,6 +131,9 @@ public class TourSpotService {
                     "&contentId=" + contentId + "&contentTypeId=" + contentTypeId + "&serviceKey=" + serviceKey3;
             Map<String, Object> introItem = fetchApiData(introUrl, "intro", true);
 
+            String addStr = INFO_CENTER_SUFFIX.getOrDefault(contentTypeId, "");
+            String useTime = contentTypeId.equals("39") ? "opentimefood" : "usetime" + addStr;
+
             return TourSpotDetailDto.builder()
                     .contentId(contentId)
                     .title((String) commonItem.getOrDefault("title", ""))
@@ -127,9 +142,9 @@ public class TourSpotService {
                             .collect(Collectors.toList()))
                     .overview((String) commonItem.getOrDefault("overview", ""))
                     .homepage((String) commonItem.getOrDefault("homepage", ""))
-                    .infoCenter((String) introItem.getOrDefault("infocenter", ""))
-                    .useTime((String) introItem.getOrDefault("usetime", ""))
-                    .parking((String) introItem.getOrDefault("parking", ""))
+                    .infoCenter((String) introItem.getOrDefault("infocenter" + addStr, ""))
+                    .useTime((String) introItem.getOrDefault(useTime, ""))
+                    .parking((String) introItem.getOrDefault("parking" + addStr, ""))
                     .build();
         } catch (Exception e) {
             log.error("API 호출 중 오류 - contentId: {}: {}", contentId, e.getMessage());
