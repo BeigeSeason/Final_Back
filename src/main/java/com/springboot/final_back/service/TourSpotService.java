@@ -11,6 +11,7 @@ import com.springboot.final_back.repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.common.unit.DistanceUnit;
+import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.sort.GeoDistanceSortBuilder;
 import org.elasticsearch.search.sort.SortBuilders;
@@ -99,6 +100,7 @@ public class TourSpotService {
                 detailDto.setAddr1(tourSpot.getAddr1());
                 detailDto.setMapX(tourSpot.getMapX());
                 detailDto.setMapY(tourSpot.getMapY());
+                detailDto.setNearSpots(findNearestTourSpots(tourSpot.getLocation(), tourSpot.getContentId()));
 
                 log.info(tourSpot.toString());
                 return detailDto;
@@ -244,7 +246,7 @@ public class TourSpotService {
     }
 
     // GeoPoint로 가까운 TourSpots 10개 가져오기
-    public Page<TourSpotListDto> findNearestTourSpots(GeoPoint point) {
+    public Page<TourSpotListDto> findNearestTourSpots(GeoPoint point, String exceptId) {
         Pageable pageable = PageRequest.of(0, 10);
 
         // GeoDistance 정렬 설정
@@ -252,8 +254,15 @@ public class TourSpotService {
                 .order(SortOrder.ASC)
                 .unit(DistanceUnit.KILOMETERS);
 
+        // 검색 범위를 50km로 제한하고 기준 장소 제외
+        BoolQueryBuilder boolQuery = QueryBuilders.boolQuery()
+                .filter(QueryBuilders.geoDistanceQuery("location")
+                        .point(point.getLat(), point.getLon())
+                        .distance(50, DistanceUnit.KILOMETERS)) // 50km 내 문서만 대상
+                .mustNot(QueryBuilders.termQuery("content_id", exceptId)); // 기준 장소 제외
+
         Query query = new NativeSearchQueryBuilder()
-                .withQuery(QueryBuilders.matchAllQuery())
+                .withQuery(boolQuery)
                 .withSorts(geoSort)
                 .withPageable(pageable)
                 .build();
@@ -284,7 +293,7 @@ public class TourSpotService {
                 .parking(detail.getParking())
                 .mapX(tourSpot.getMapX())
                 .mapY(tourSpot.getMapY())
-                .nearSpots(findNearestTourSpots(tourSpot.getLocation()))
+                .nearSpots(findNearestTourSpots(tourSpot.getLocation(), tourSpot.getContentId()))
                 .bookmarkCount(tourSpot.getBookmarkCount())
                 .build();
     }
