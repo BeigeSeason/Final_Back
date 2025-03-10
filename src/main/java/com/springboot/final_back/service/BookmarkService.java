@@ -1,7 +1,6 @@
 package com.springboot.final_back.service;
 
 import com.springboot.final_back.constant.Type;
-import com.springboot.final_back.dto.diary.DiarySearchListDto;
 import com.springboot.final_back.entity.elasticsearch.Diary;
 import com.springboot.final_back.entity.elasticsearch.TourSpots;
 import com.springboot.final_back.entity.mysql.Bookmark;
@@ -9,20 +8,13 @@ import com.springboot.final_back.entity.mysql.Member;
 import com.springboot.final_back.repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import java.time.LocalDateTime;
-import java.util.Optional;
-
+@Slf4j
 @Service
 @RequiredArgsConstructor
-@Slf4j
 public class BookmarkService {
     private final BookmarkRepository bookmarkRepository;
     private final TourSpotsRepository tourSpotsRepository;
@@ -47,6 +39,7 @@ public class BookmarkService {
             if (bookmark.getType() == Type.DIARY) {
                 Diary diary = diaryRepository.findByDiaryId(bookmark.getBookmarkedId()).orElseThrow(() -> new RuntimeException("Diary not found"));
                 diary.setBookmarkCount(diary.getBookmarkCount() + 1);
+
                 diaryRepository.save(diary);
             } else {
                 TourSpots tourSpot = tourSpotsRepository.findByContentId(bookmark.getBookmarkedId()).orElseThrow(() -> new RuntimeException("Diary not found"));
@@ -58,6 +51,8 @@ public class BookmarkService {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+
+
     }
 
     @Transactional
@@ -72,7 +67,6 @@ public class BookmarkService {
                 diary.setBookmarkCount(diary.getBookmarkCount() - 1);
                 diaryRepository.save(diary);
             } else {
-                log.error("여기로 오는거지?");
                 TourSpots tourSpot = tourSpotsRepository.findByContentId(bookmark.getBookmarkedId()).orElseThrow(() -> new RuntimeException("Diary not found"));
                 tourSpot.setBookmarkCount(tourSpot.getBookmarkCount() - 1);
                 tourSpotsRepository.save(tourSpot);

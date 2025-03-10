@@ -270,6 +270,7 @@ public class TourSpotService {
                 .mapX(tourSpot.getMapX())
                 .mapY(tourSpot.getMapY())
                 .nearSpots(findNearestTourSpots(tourSpot.getLocation()))
+                .bookmarkCount(tourSpot.getBookmarkCount())
                 .build();
     }
 
