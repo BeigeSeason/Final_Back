@@ -53,7 +53,7 @@ public class Diary {
     private LocalDateTime createdTime;
 
     // 일정 시작일
-    @Field(type = FieldType.Date, format = DateFormat.basic_date, name = "start_time")
+    @Field(type = FieldType.Date, format = DateFormat.basic_date, name = "start_date")
     private LocalDate startDate;
 
     // 일정 종료일
