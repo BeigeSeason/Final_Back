@@ -1,5 +1,6 @@
 package com.springboot.final_back.entity.mysql;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 
 import javax.persistence.*;
@@ -18,6 +19,7 @@ public class Review {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member")
+    @JsonIgnore
     private Member member;
 
     @Column(nullable = false)

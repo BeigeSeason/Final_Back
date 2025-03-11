@@ -1,5 +1,6 @@
 package com.springboot.final_back.entity.mysql;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.springboot.final_back.constant.Type;
 import lombok.*;
 
@@ -20,6 +21,7 @@ public class Bookmark {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member")
+    @JsonIgnore
     private Member member;
 
     private Type type; // MEMBER, DIARY, REVIEW, TOURSPOT

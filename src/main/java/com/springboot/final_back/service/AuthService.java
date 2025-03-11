@@ -37,24 +37,24 @@ public class AuthService {
     // 회원가입
     @Transactional
     public boolean signUp(SignupDto signupDto) {
-        try{
-            if(memberRepository.existsMemberByUserId(signupDto.getUserId())){
+        try {
+            if (memberRepository.existsMemberByUserId(signupDto.getUserId())) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
-            }else {
+            } else {
                 memberRepository.save(signupDto.toEntity(passwordEncoder));
                 return true;
             }
-        }catch (ResponseStatusException e){
-            log.error("회원 가입 실패 : {}",e.getMessage());
+        } catch (ResponseStatusException e) {
+            log.error("회원 가입 실패 : {}", e.getMessage());
             throw e;
         }
     }
 
     // 로그인
     public TokenDto login(LoginDto memberReqDto) {
-        try{
+        try {
             Member member = memberRepository.findByUserId(memberReqDto.getUserId())
-                    .orElseThrow(()-> new NotMemberException(HttpStatus.UNAUTHORIZED, "회원가입이 필요합니다."));
+                    .orElseThrow(() -> new NotMemberException(HttpStatus.UNAUTHORIZED, "회원가입이 필요합니다."));
 
             UsernamePasswordAuthenticationToken authenticationToken = memberReqDto.toAuthentication();
             // authenticate() 내부에서 loadUserByUsername()가 실행되어 가입한 회원인지 확인하는 로직 존재함
@@ -63,7 +63,7 @@ public class AuthService {
             String newRefreshToken = tokenDto.getRefreshToken();
             RefreshToken refreshToken = refreshTokenRepository.findByMember_UserId(memberReqDto.getUserId())
                     .orElse(null);
-            if(refreshToken == null){
+            if (refreshToken == null) {
                 RefreshToken newToken = RefreshToken.builder()
                         .refreshToken(newRefreshToken)
                         .member(member)
@@ -75,7 +75,7 @@ public class AuthService {
 
             return tokenDto;
 
-        }catch (Exception e){
+        } catch (Exception e) {
             log.error(e.getMessage());
             return null;
         }
@@ -108,14 +108,27 @@ public class AuthService {
     // 내 정보 수정
     @Transactional
     public boolean updateMember(MemberReqDto memberReqDto) {
-        try{
-            Member member = memberRepository.findByUserId(memberReqDto.getUserId()).orElseThrow(() ->  new RuntimeException("Member not found"));
+        try {
+            Member member = memberRepository.findByUserId(memberReqDto.getUserId()).orElseThrow(() -> new RuntimeException("Member not found"));
             member.setName(memberReqDto.getName());
             member.setNickname(memberReqDto.getNickname());
             memberRepository.save(member);
             return true;
         } catch (Exception e) {
             log.error("회원정보 수정 오류 : {}", e.getMessage());
+            return false;
+        }
+    }
+
+    // 회원 탈퇴
+    @Transactional
+    public boolean deleteMember(MemberReqDto memberReqDto) {
+        try {
+            Member member = memberRepository.findByUserId(memberReqDto.getUserId()).orElseThrow(() -> new RuntimeException("Member not found"));
+            memberRepository.delete(member);
+            return true;
+        } catch (Exception e) {
+            log.error(e.getMessage());
             return false;
         }
     }

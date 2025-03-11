@@ -1,5 +1,6 @@
 package com.springboot.final_back.entity.mysql;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 
 import javax.persistence.*;
@@ -25,6 +26,7 @@ public class RefreshToken {
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member")
+    @JsonIgnore
     private Member member;
 
     @PrePersist

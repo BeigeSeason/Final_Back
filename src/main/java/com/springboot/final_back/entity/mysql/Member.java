@@ -1,11 +1,14 @@
 package com.springboot.final_back.entity.mysql;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.springboot.final_back.constant.MemberRole;
 import com.springboot.final_back.dto.Auth.MemberResDto;
 import lombok.*;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "member")
@@ -22,6 +25,7 @@ public class Member {
     private String userId;
 
     @Column(nullable = false)
+    @JsonIgnore
     private String password;
 
     @Column(unique = true, nullable = false)
@@ -89,5 +93,18 @@ public class Member {
         return memberResDto;
     }
 
+    @OneToMany(mappedBy = "reporter", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<Report> reporter = new ArrayList<>();
 
+    @OneToMany(mappedBy = "reported", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<Report> reported = new ArrayList<>();
+
+    @OneToMany(mappedBy = "member", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<Review> reviews = new ArrayList<>();
+
+    @OneToMany(mappedBy = "member", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<Bookmark> bookmarks = new ArrayList<>();
+
+    @OneToMany(mappedBy = "member_id", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<Ban> bans = new ArrayList<>();
 }

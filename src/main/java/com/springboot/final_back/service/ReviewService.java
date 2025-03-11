@@ -98,7 +98,11 @@ public class ReviewService {
 
             spot.setReviewCount(spot.getReviewCount() - 1);
             spot.setRating(newRating);
-            spot.setAvgRating(newRating / (spot.getReviewCount() - 1));
+            if (spot.getReviewCount() > 0) {
+                spot.setAvgRating(newRating / spot.getReviewCount());
+            } else {
+                spot.setAvgRating(0); // 리뷰가 없으면 평균 점수를 0으로 설정
+            }
 
             tourSpotsRepository.save(spot);
             return true;

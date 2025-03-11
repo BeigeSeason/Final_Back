@@ -7,6 +7,7 @@ import com.springboot.final_back.dto.Auth.TokenDto;
 import com.springboot.final_back.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -38,5 +39,11 @@ public class AuthController {
     @PutMapping("/update")
     public ResponseEntity<Boolean> updateMember(@RequestBody MemberReqDto memberReqDto) {
         return ResponseEntity.ok(authService.updateMember(memberReqDto));
+    }
+
+    // 회원탈퇴
+    @DeleteMapping("/sign-out")
+    public ResponseEntity<Boolean> signOut(@RequestBody MemberReqDto memberReqDto) {
+        return new ResponseEntity<>(authService.deleteMember(memberReqDto), HttpStatus.OK);
     }
 }

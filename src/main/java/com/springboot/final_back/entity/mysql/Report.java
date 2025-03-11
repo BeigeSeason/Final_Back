@@ -1,6 +1,7 @@
 package com.springboot.final_back.entity.mysql;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.springboot.final_back.constant.State;
 import com.springboot.final_back.constant.Type;
 import lombok.*;
@@ -24,12 +25,14 @@ public class Report {
     @Column(name = "report_type")
     private Type reportType; // MEMBER, DIARY, REVIEW, TOURSPOT
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "reporter")
+    @JsonIgnore
     private Member reporter;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "reported")
+    @JsonIgnore
     private Member reported;
 
     private String reportEntity; // 다이어리id, 리뷰id
