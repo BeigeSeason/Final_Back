@@ -18,12 +18,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@Transactional // 클래스 레벨 트랜잭션
 public class ReviewService {
     private final ReviewRepository reviewRepository;
     private final TourSpotsRepository tourSpotsRepository;
@@ -31,87 +30,124 @@ public class ReviewService {
     private final RedisTemplate<String, String> redisTemplate;
 
     private static final String REVIEW_QUEUE = "review:queue";
+    private static final String REVIEW_DEAD_QUEUE = "review:dead";
 
-    // 리뷰 추가 요청을 큐에 넣음
+    // 리뷰 추가 요청
+    @Async
     public void addReviewAsync(ReviewReqDto reviewReqDto) {
-        String job = String.format("ADD|%s|%s|%s|%f",
+        String job = String.format("ADD|%s|%s|%s|%f|0",
                 reviewReqDto.getTourSpotId(), reviewReqDto.getMemberId(),
                 reviewReqDto.getContent(), reviewReqDto.getRating());
         redisTemplate.opsForList().leftPush(REVIEW_QUEUE, job);
         log.info("Queued review add: {}", job);
     }
 
-    // 리뷰 수정 요청을 큐에 넣음
+    // 리뷰 수정 요청
+    @Async
     public void editReviewAsync(ReviewReqDto reviewReqDto) {
-        String job = String.format("EDIT|%d|%s|%f",
+        String job = String.format("EDIT|%d|%s|%f|0",
                 reviewReqDto.getId(), reviewReqDto.getContent(), reviewReqDto.getRating());
         redisTemplate.opsForList().leftPush(REVIEW_QUEUE, job);
         log.info("Queued review edit: {}", job);
     }
 
-    // 리뷰 삭제 요청을 큐에 넣음
+    // 리뷰 삭제 요청
+    @Async
     public void deleteReviewAsync(Long reviewId) {
-        String job = String.format("DELETE|%d", reviewId);
+        String job = String.format("DELETE|%d|0", reviewId);
         redisTemplate.opsForList().leftPush(REVIEW_QUEUE, job);
         log.info("Queued review delete: {}", job);
     }
 
-    // 워커: 큐에서 작업 처리
+    // 큐 처리
     @Scheduled(fixedDelay = 1000)
     @Async
-    @Transactional
     public void processReviewQueue() {
         String job = redisTemplate.opsForList().rightPop(REVIEW_QUEUE);
-        if (job == null) return;
+        if (job == null) {
+            log.debug("Review queue is empty");
+            return;
+        }
+
+        String[] parts = job.split("\\|");
+        int retryCount = Integer.parseInt(parts[parts.length - 1]);
+        if (retryCount >= 3) {
+            log.error("Max retries reached for review job: {}", job);
+            redisTemplate.opsForList().leftPush(REVIEW_DEAD_QUEUE, job); // 데드 큐로 이동
+            return;
+        }
 
         try {
-            String[] parts = job.split("\\|");
             String action = parts[0];
-
-            if ("ADD".equals(action)) {
-                String tourSpotId = parts[1];
-                String memberId = parts[2];
-                String content = parts[3];
-                float rating = Float.parseFloat(parts[4]);
-
-                Member member = memberRepository.findByUserId(memberId)
-                        .orElseThrow(() -> new RuntimeException("존재하지 않는 사용자"));
-                Review review = Review.builder()
-                        .member(member)
-                        .tourSpotId(tourSpotId)
-                        .content(content)
-                        .rating(rating)
-                        .build();
-                reviewRepository.save(review);
-                updateTourSpot(tourSpotId, rating, 1);
-            } else if ("EDIT".equals(action)) {
-                Long reviewId = Long.parseLong(parts[1]);
-                String content = parts[2];
-                float newRating = Float.parseFloat(parts[3]);
-
-                Review review = reviewRepository.findById(reviewId)
-                        .orElseThrow(() -> new RuntimeException("Review not found"));
-                float oldRating = review.getRating();
-                review.setContent(content);
-                review.setRating(newRating);
-                reviewRepository.save(review);
-                updateTourSpot(review.getTourSpotId(), newRating - oldRating, 0);
-            } else if ("DELETE".equals(action)) {
-                Long reviewId = Long.parseLong(parts[1]);
-                Review review = reviewRepository.findById(reviewId)
-                        .orElseThrow(() -> new RuntimeException("Review not found"));
-                float rating = review.getRating();
-                String tourSpotId = review.getTourSpotId();
-                reviewRepository.delete(review);
-                updateTourSpot(tourSpotId, -rating, -1);
+            switch (action) {
+                case "ADD":
+                    addReviewFromQueue(parts[1], parts[2], parts[3], Float.parseFloat(parts[4]));
+                    break;
+                case "EDIT":
+                    editReviewFromQueue(Long.parseLong(parts[1]), parts[2], Float.parseFloat(parts[3]));
+                    break;
+                case "DELETE":
+                    deleteReviewFromQueue(Long.parseLong(parts[1]));
+                    break;
+                default:
+                    log.warn("Unknown action in review job: {}", job);
+                    return;
             }
             log.info("Processed review job: {}", job);
         } catch (Exception e) {
-            log.error("Error processing review job: {}", job, e);
-            redisTemplate.opsForList().leftPush("review:failed", job);
+            log.error("Error processing review job: {}, retrying (count: {})", job, retryCount, e);
+            String updatedJob = buildUpdatedJob(parts, retryCount);
+            redisTemplate.opsForList().leftPush(REVIEW_QUEUE, updatedJob);
         }
     }
 
+    // ADD 작업 처리
+    private void addReviewFromQueue(String tourSpotId, String memberId, String content, float rating) {
+        Member member = memberRepository.findByUserId(memberId)
+                .orElseThrow(() -> new RuntimeException("존재하지 않는 사용자"));
+        Review review = Review.builder()
+                .member(member)
+                .tourSpotId(tourSpotId)
+                .content(content)
+                .rating(rating)
+                .build();
+        reviewRepository.save(review);
+        updateTourSpot(tourSpotId, rating, 1);
+    }
+
+    // EDIT 작업 처리
+    private void editReviewFromQueue(Long reviewId, String content, float newRating) {
+        Review review = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> new RuntimeException("Review not found"));
+        float oldRating = review.getRating();
+        review.setContent(content);
+        review.setRating(newRating);
+        reviewRepository.save(review);
+        updateTourSpot(review.getTourSpotId(), newRating - oldRating, 0);
+    }
+
+    // DELETE 작업 처리
+    private void deleteReviewFromQueue(Long reviewId) {
+        Review review = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> new RuntimeException("Review not found"));
+        float rating = review.getRating();
+        String tourSpotId = review.getTourSpotId();
+        reviewRepository.delete(review);
+        updateTourSpot(tourSpotId, -rating, -1);
+    }
+
+    // 재큐잉 메시지 생성
+    private String buildUpdatedJob(String[] parts, int retryCount) {
+        String action = parts[0];
+        return switch (action) {
+            case "ADD" -> String.format("%s|%s|%s|%s|%s|%d", parts[0], parts[1], parts[2], parts[3], parts[4], retryCount + 1);
+            case "EDIT" -> String.format("%s|%s|%s|%s|%d", parts[0], parts[1], parts[2], parts[3], retryCount + 1);
+            case "DELETE" -> String.format("%s|%s|%d", parts[0], parts[1], retryCount + 1);
+            default -> throw new IllegalArgumentException("Unknown action: " + action);
+        };
+    }
+
+    // TourSpots 업데이트
     private void updateTourSpot(String tourSpotId, float ratingDelta, int countDelta) {
         TourSpots spot = tourSpotsRepository.findByContentId(tourSpotId)
                 .orElseThrow(() -> new RuntimeException("존재하지 않는 여행지"));
@@ -123,62 +159,28 @@ public class ReviewService {
         tourSpotsRepository.save(spot);
     }
 
+    // 리뷰 조회
+    public Page<ReviewResDto> getReviews(int page, int size, String tourSpotId) {
+        Sort sort = Sort.by(Sort.Direction.DESC, "createdAt");
+        Pageable pageable = PageRequest.of(page, size, sort);
+        Page<Review> reviews = reviewRepository.findAllByTourSpotId(tourSpotId, pageable);
 
-    // 리뷰 작성
-    @Transactional
-    public boolean addReview(ReviewReqDto reviewReqDto) {
-        try {
-            Member member = memberRepository.findByUserId(reviewReqDto.getMemberId())
-                    .orElseThrow(() -> new RuntimeException("존재하지 않는 사용자"));
+        List<ReviewResDto> reviewResDtoList = reviews.stream()
+                .map(review -> {
+                    Member member = review.getMember();
+                    return ReviewResDto.builder()
+                            .id(review.getId())
+                            .memberId(member.getUserId())
+                            .nickname(member.getNickname())
+                            .profileImg(member.getImgPath())
+                            .createdAt(review.getCreatedAt())
+                            .rating(review.getRating())
+                            .content(review.getContent())
+                            .build();
+                })
+                .toList();
 
-            Review review = Review.builder()
-                    .member(member)
-                    .rating(reviewReqDto.getRating())
-                    .tourSpotId(reviewReqDto.getTourSpotId())
-                    .content(reviewReqDto.getContent())
-                    .build();
-            reviewRepository.save(review);
-
-            TourSpots spot = tourSpotsRepository.findByContentId(review.getTourSpotId()).orElseThrow(() -> new RuntimeException("존재하지 않는 여행지"));
-
-            spot.setReviewCount(spot.getReviewCount() + 1);
-            spot.setRating(spot.getRating() + reviewReqDto.getRating());
-            spot.setAvgRating(spot.getRating() / spot.getReviewCount());
-
-            tourSpotsRepository.save(spot);
-            return true;
-        } catch (Exception e) {
-            log.error("리뷰 생성 중 에러 발생");
-            throw new RuntimeException(e);
-        }
-    }
-
-    // 리뷰 수정
-    @Transactional
-    public boolean editReview(ReviewReqDto reviewReqDto) {
-        try {
-            Review review = reviewRepository.findById(reviewReqDto.getId())
-                    .orElseThrow(() -> new RuntimeException("Review not found"));
-
-            float rating = review.getRating();
-
-            review.setRating(reviewReqDto.getRating());
-            review.setContent(reviewReqDto.getContent());
-            reviewRepository.save(review);
-
-            TourSpots spot = tourSpotsRepository.findByContentId(review.getTourSpotId()).orElseThrow(() -> new RuntimeException("존재하지 않는 여행지"));
-
-            // 기존의 리뷰 점수를 빼고 새 리뷰 점수 더하기
-            float newRating = spot.getRating() - rating + reviewReqDto.getRating();
-
-            spot.setRating(newRating);
-            spot.setAvgRating(newRating / spot.getReviewCount());
-
-            tourSpotsRepository.save(spot);
-            return true;
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        return new PageImpl<>(reviewResDtoList, pageable, reviews.getTotalElements());
     }
 
     // 리뷰 삭제
@@ -208,33 +210,4 @@ public class ReviewService {
             throw new RuntimeException(e);
         }
     }
-
-    public Page<ReviewResDto> getReviews(int page, int size, String tourSpotId) {
-        // 정렬 기준: createdAt 내림차순
-        Sort sort = Sort.by(Sort.Direction.DESC, "createdAt");
-        // Pageable 객체 생성
-        Pageable pageable = PageRequest.of(page, size, sort);
-        // Repository에서 Review 조회
-        Page<Review> reviews = reviewRepository.findAllByTourSpotId(tourSpotId, pageable);
-
-        // Review 리스트를 ReviewResDto 리스트로 변환
-        List<ReviewResDto> reviewResDtoList = reviews.stream()
-                .map(review -> {
-                    Member member = review.getMember();
-                    return ReviewResDto.builder()
-                            .id(review.getId())
-                            .memberId(member.getUserId())
-                            .nickname(member.getNickname())
-                            .profileImg(member.getImgPath())
-                            .createdAt(review.getCreatedAt())
-                            .rating(review.getRating())
-                            .content(review.getContent())
-                            .build();
-                })
-                .toList();
-
-        // Page 객체로 변환하여 반환
-        return new PageImpl<>(reviewResDtoList, pageable, reviews.getTotalElements());
-    }
-
 }
