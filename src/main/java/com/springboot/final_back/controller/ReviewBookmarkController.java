@@ -24,12 +24,6 @@ public class ReviewBookmarkController {
 
     // 리뷰 작성
     @PostMapping("/add-review")
-    public ResponseEntity<Boolean> addReview(@RequestBody ReviewReqDto reviewReqDto) {
-        return new ResponseEntity<>(reviewService.addReview(reviewReqDto), HttpStatus.OK);
-    }
-
-    // 리뷰 작성(redis)
-    @PostMapping("/add-review-redis")
     public ResponseEntity<Void> addReviewRedis(@RequestBody ReviewReqDto reviewReqDto) {
         reviewService.addReviewAsync(reviewReqDto);
         return ResponseEntity.ok().build();
@@ -37,24 +31,12 @@ public class ReviewBookmarkController {
 
     // 리뷰 수정
     @PostMapping("/edit-review")
-    public ResponseEntity<Boolean> editReview(@RequestBody ReviewReqDto reviewReqDto) {
-        return new ResponseEntity<>(reviewService.editReview(reviewReqDto), HttpStatus.OK);
-    }
-
-    // 리뷰 수정(redis)
-    @PostMapping("/edit-review-redis")
     public ResponseEntity<Void> editReviewRedis(@RequestBody ReviewReqDto reviewReqDto) {
         reviewService.editReviewAsync(reviewReqDto);
         return ResponseEntity.ok().build();
     }
 
     // 리뷰 삭제
-    @PostMapping("/delete-review")
-    public ResponseEntity<Boolean> deleteReview(@RequestParam Long reviewId) {
-        return new ResponseEntity<>(reviewService.deleteReview(reviewId), HttpStatus.OK);
-    }
-
-    // 리뷰 삭제(redis)
     @PostMapping("/delete-review-redis")
     public ResponseEntity<Void> deleteReviewRedis(@RequestParam Long reviewId) {
         reviewService.deleteReviewAsync(reviewId);
@@ -66,13 +48,15 @@ public class ReviewBookmarkController {
     public ResponseEntity<Boolean> addBookmark(@RequestParam String targetId,
                                                @RequestParam String userId,
                                                @RequestParam String type) {
-        return new ResponseEntity<>(bookmarkService.addBookmark(targetId, userId, type), HttpStatus.OK);
+        bookmarkService.addBookmarkAsync(targetId, userId, type);
+        return ResponseEntity.ok().build();
     }
 
     // 북마크 삭제
     @PostMapping("/delete-bookmark")
     public ResponseEntity<Boolean> deleteBookmark(@RequestParam String targetId, @RequestParam String userId) {
-        return new ResponseEntity<>(bookmarkService.deleteBookmark(targetId, userId), HttpStatus.OK);
+        bookmarkService.deleteBookmarkAsync(targetId, userId);
+        return ResponseEntity.ok().build();
     }
 
     // 내가 북마크 여부 조회

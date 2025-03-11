@@ -50,9 +50,10 @@ import java.util.stream.Collectors;
 public class TourSpotService {
     private final TourSpotsRepository tourSpotsRepository;
     private final ElasticsearchOperations elasticsearchOperations;
-    private final RedisTemplate<String, TourSpotStats> redisTemplate;
+    private final RedisTemplate<String, String> redisTemplate;
     private final ReviewRepository reviewRepository;
     private final BookmarkRepository bookmarkRepository;
+
     @Value("${tour.api.service-key1}")
     private String serviceKey1;
 
@@ -76,46 +77,56 @@ public class TourSpotService {
                 "14", "culture"); // 불변 Map으로 설정
     }
 
+    // 초기 호출
     public TourSpotDetailDto getTourSpotDetail(String tourSpotId) {
-        try {
-            Optional<TourSpots> tourSpotOpt = tourSpotsRepository.findByContentId(tourSpotId);
+        return getTourSpotDetail(tourSpotId, 0);
+    }
 
-            if (tourSpotOpt.isPresent()) {
-                TourSpots tourSpot = tourSpotOpt.get();
-                TourSpots.Detail detail = tourSpot.getDetail();
-
-
-                if (detail != null) {
-                    // 썸네일을 이미지 목록에 포함시켜 전송
-                    if (!tourSpot.getFirstImage().isEmpty()) detail.getImages().add(0, tourSpot.getFirstImage());
-                    return convertToDto(tourSpot, detail);
+    public TourSpotDetailDto getTourSpotDetail(String tourSpotId, int retryCount) {
+        if (retryCount > 5) throw new RuntimeException("재시도 횟수 초과");
+        String lockKey = "lock:tourspot:" + tourSpotId; // 고유 락 키
+        if (Boolean.TRUE.equals(redisTemplate.opsForValue().setIfAbsent(lockKey, "locked", 10, TimeUnit.SECONDS))) {
+            try {
+                Optional<TourSpots> tourSpotOpt = tourSpotsRepository.findByContentId(tourSpotId);
+                if (tourSpotOpt.isPresent()) {
+                    TourSpots tourSpot = tourSpotOpt.get();
+                    TourSpots.Detail detail = tourSpot.getDetail();
+                    if (detail != null) {
+                        if (!tourSpot.getFirstImage().isEmpty()) detail.getImages().add(0, tourSpot.getFirstImage());
+                        return convertToDto(tourSpot, detail);
+                    }
+                    TourSpotDetailDto detailDto = fetchDetailFromApi(tourSpotId, tourSpot.getContentTypeId());
+                    saveDetailToElasticsearch(tourSpot.getId(), detailDto);
+                    if (!tourSpot.getFirstImage().isEmpty()) detailDto.getImages().add(0, tourSpot.getFirstImage());
+                    detailDto.setAddr1(tourSpot.getAddr1());
+                    detailDto.setMapX(tourSpot.getMapX());
+                    detailDto.setMapY(tourSpot.getMapY());
+                    detailDto.setNearSpots(findNearestTourSpots(tourSpot.getLocation(), tourSpot.getContentId()));
+                    return detailDto;
+                } else {
+                    throw new RuntimeException("해당 관광지 데이터가 없습니다: " + tourSpotId);
                 }
-
-                TourSpotDetailDto detailDto = fetchDetailFromApi(tourSpotId, tourSpot.getContentTypeId());
-                saveDetailToElasticsearch(tourSpot.getId(), detailDto);
-                // 썸네일을 이미지 목록에 포함시켜 전송
-                if (!tourSpot.getFirstImage().isEmpty()) detailDto.getImages().add(0, tourSpot.getFirstImage());
-                log.info(detailDto.getImages().toString());
-                detailDto.setAddr1(tourSpot.getAddr1());
-                detailDto.setMapX(tourSpot.getMapX());
-                detailDto.setMapY(tourSpot.getMapY());
-                detailDto.setNearSpots(findNearestTourSpots(tourSpot.getLocation(), tourSpot.getContentId()));
-
-                return detailDto;
-            } else {
-                throw new RuntimeException("해당 관광지 데이터가 없습니다: " + tourSpotId);
+            } catch (Exception e) {
+                log.error("상세 정보 조회 중 오류: {}", e.getMessage());
+                throw new RuntimeException("상세 정보를 가져오지 못했습니다.");
+            } finally {
+                redisTemplate.delete(lockKey); // 락 해제
             }
-        } catch (Exception e) {
-            log.error("상세 정보 조회 중 오류: {}", e.getMessage());
-            throw new RuntimeException("상세 정보를 가져오지 못했습니다.");
+        } else {
+            // 락을 획득하지 못한 경우 대기 후 재시도
+            try {
+                Thread.sleep(1000); // 100ms 대기
+                return getTourSpotDetail(tourSpotId, retryCount + 1); // 재귀 호출
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new RuntimeException("대기 중 인터럽트 발생", e);
+            }
         }
     }
 
     // 여행지 상세정보 존재하지 않을 시 Api 요청
     private TourSpotDetailDto fetchDetailFromApi(String contentId, String contentTypeId) {
         try {
-
-
             // 1. detailCommon1 호출
             String commonUrl = BASE_URL + "/detailCommon1?MobileOS=ETC&MobileApp=Final_test&_type=json" +
                     "&contentId=" + contentId + "&defaultYN=Y&overviewYN=Y&serviceKey=" + serviceKey1;
@@ -227,12 +238,12 @@ public class TourSpotService {
         }
     }
 
-    // 캐싱(레디스의 잔재)
+ /*   // 캐싱(레디스의 잔재)
     public void cacheTourSpotStats(String tourSpotId) {
         TourSpotStats stats = fetchStatsFromMySQL(tourSpotId);
         String cacheKey = TourConstants.TOUR_SPOT_STATS_PREFIX + tourSpotId;
         redisTemplate.opsForValue().set(cacheKey, stats, 1, TimeUnit.HOURS);
-    }
+    }*/
 
     // 단일 관광지의 리뷰/북마크 통계를 MySQL에서 조회해 TourSpotStats로 반환.
     private TourSpotStats fetchStatsFromMySQL(String tourSpotId) {
