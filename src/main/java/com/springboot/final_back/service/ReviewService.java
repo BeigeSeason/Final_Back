@@ -11,6 +11,9 @@ import com.springboot.final_back.repository.TourSpotsRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.*;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,6 +28,101 @@ public class ReviewService {
     private final ReviewRepository reviewRepository;
     private final TourSpotsRepository tourSpotsRepository;
     private final MemberRepository memberRepository;
+    private final RedisTemplate<String, String> redisTemplate;
+
+    private static final String REVIEW_QUEUE = "review:queue";
+
+    // 리뷰 추가 요청을 큐에 넣음
+    public void addReviewAsync(ReviewReqDto reviewReqDto) {
+        String job = String.format("ADD|%s|%s|%s|%f",
+                reviewReqDto.getTourSpotId(), reviewReqDto.getMemberId(),
+                reviewReqDto.getContent(), reviewReqDto.getRating());
+        redisTemplate.opsForList().leftPush(REVIEW_QUEUE, job);
+        log.info("Queued review add: {}", job);
+    }
+
+    // 리뷰 수정 요청을 큐에 넣음
+    public void editReviewAsync(ReviewReqDto reviewReqDto) {
+        String job = String.format("EDIT|%d|%s|%f",
+                reviewReqDto.getId(), reviewReqDto.getContent(), reviewReqDto.getRating());
+        redisTemplate.opsForList().leftPush(REVIEW_QUEUE, job);
+        log.info("Queued review edit: {}", job);
+    }
+
+    // 리뷰 삭제 요청을 큐에 넣음
+    public void deleteReviewAsync(Long reviewId) {
+        String job = String.format("DELETE|%d", reviewId);
+        redisTemplate.opsForList().leftPush(REVIEW_QUEUE, job);
+        log.info("Queued review delete: {}", job);
+    }
+
+    // 워커: 큐에서 작업 처리
+    @Scheduled(fixedDelay = 1000)
+    @Async
+    @Transactional
+    public void processReviewQueue() {
+        String job = redisTemplate.opsForList().rightPop(REVIEW_QUEUE);
+        if (job == null) return;
+
+        try {
+            String[] parts = job.split("\\|");
+            String action = parts[0];
+
+            if ("ADD".equals(action)) {
+                String tourSpotId = parts[1];
+                String memberId = parts[2];
+                String content = parts[3];
+                float rating = Float.parseFloat(parts[4]);
+
+                Member member = memberRepository.findByUserId(memberId)
+                        .orElseThrow(() -> new RuntimeException("존재하지 않는 사용자"));
+                Review review = Review.builder()
+                        .member(member)
+                        .tourSpotId(tourSpotId)
+                        .content(content)
+                        .rating(rating)
+                        .build();
+                reviewRepository.save(review);
+                updateTourSpot(tourSpotId, rating, 1);
+            } else if ("EDIT".equals(action)) {
+                Long reviewId = Long.parseLong(parts[1]);
+                String content = parts[2];
+                float newRating = Float.parseFloat(parts[3]);
+
+                Review review = reviewRepository.findById(reviewId)
+                        .orElseThrow(() -> new RuntimeException("Review not found"));
+                float oldRating = review.getRating();
+                review.setContent(content);
+                review.setRating(newRating);
+                reviewRepository.save(review);
+                updateTourSpot(review.getTourSpotId(), newRating - oldRating, 0);
+            } else if ("DELETE".equals(action)) {
+                Long reviewId = Long.parseLong(parts[1]);
+                Review review = reviewRepository.findById(reviewId)
+                        .orElseThrow(() -> new RuntimeException("Review not found"));
+                float rating = review.getRating();
+                String tourSpotId = review.getTourSpotId();
+                reviewRepository.delete(review);
+                updateTourSpot(tourSpotId, -rating, -1);
+            }
+            log.info("Processed review job: {}", job);
+        } catch (Exception e) {
+            log.error("Error processing review job: {}", job, e);
+            redisTemplate.opsForList().leftPush("review:failed", job);
+        }
+    }
+
+    private void updateTourSpot(String tourSpotId, float ratingDelta, int countDelta) {
+        TourSpots spot = tourSpotsRepository.findByContentId(tourSpotId)
+                .orElseThrow(() -> new RuntimeException("존재하지 않는 여행지"));
+        float newRating = spot.getRating() + ratingDelta;
+        int newCount = spot.getReviewCount() + countDelta;
+        spot.setRating(newRating);
+        spot.setReviewCount(newCount);
+        spot.setAvgRating(newCount > 0 ? newRating / newCount : 0);
+        tourSpotsRepository.save(spot);
+    }
+
 
     // 리뷰 작성
     @Transactional

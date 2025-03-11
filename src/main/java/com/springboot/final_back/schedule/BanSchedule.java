@@ -25,7 +25,7 @@ public class BanSchedule {
 
     @Scheduled(cron = "0 0 6 * * *", zone = "Asia/Seoul")
     @Transactional
-    private void memberUnbanSchedule() {
+    public void memberUnbanSchedule() {
         log.info("memberUnbanSchedule");
         try {
             LocalDateTime now = LocalDateTime.now();

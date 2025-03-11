@@ -88,7 +88,6 @@ public class TourSpotService {
                 if (detail != null) {
                     // 썸네일을 이미지 목록에 포함시켜 전송
                     if (!tourSpot.getFirstImage().isEmpty()) detail.getImages().add(0, tourSpot.getFirstImage());
-                    log.info(tourSpot.getDetail().getHomepage());
                     return convertToDto(tourSpot, detail);
                 }
 
@@ -102,7 +101,6 @@ public class TourSpotService {
                 detailDto.setMapY(tourSpot.getMapY());
                 detailDto.setNearSpots(findNearestTourSpots(tourSpot.getLocation(), tourSpot.getContentId()));
 
-                log.info(tourSpot.toString());
                 return detailDto;
             } else {
                 throw new RuntimeException("해당 관광지 데이터가 없습니다: " + tourSpotId);
