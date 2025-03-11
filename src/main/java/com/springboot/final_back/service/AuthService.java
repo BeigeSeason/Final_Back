@@ -4,10 +4,12 @@ import com.springboot.final_back.dto.*;
 import com.springboot.final_back.dto.Auth.MemberReqDto;
 import com.springboot.final_back.dto.Auth.SignupDto;
 import com.springboot.final_back.dto.Auth.TokenDto;
+import com.springboot.final_back.entity.elasticsearch.Diary;
 import com.springboot.final_back.entity.mysql.Member;
 import com.springboot.final_back.entity.mysql.RefreshToken;
 import com.springboot.final_back.exception.NotMemberException;
 import com.springboot.final_back.jwt.TokenProvider;
+import com.springboot.final_back.repository.DiaryRepository;
 import com.springboot.final_back.repository.MemberRepository;
 import com.springboot.final_back.repository.RefreshTokenRepository;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -33,6 +36,7 @@ public class AuthService {
     private final RefreshTokenRepository refreshTokenRepository;
     private final PasswordEncoder passwordEncoder;
     private final TokenProvider tokenProvider;
+    private final DiaryRepository diaryRepository;
 
     // 회원가입
     @Transactional
@@ -125,6 +129,9 @@ public class AuthService {
     public boolean deleteMember(MemberReqDto memberReqDto) {
         try {
             Member member = memberRepository.findByUserId(memberReqDto.getUserId()).orElseThrow(() -> new RuntimeException("Member not found"));
+            List<Diary> diaries = diaryRepository.findAllByMemberId(member.getId());
+
+            diaryRepository.deleteAll(diaries);
             memberRepository.delete(member);
             return true;
         } catch (Exception e) {

@@ -28,4 +28,6 @@ public interface DiaryRepository extends ElasticsearchRepository<Diary, String> 
             "GROUP BY MONTH(d.createdTime) " +
             "ORDER BY MONTH(d.createdTime)")
     List<Object[]> getMonthlyDiaryCounts(@Param("year") int year);
+
+    List<Diary> findAllByMemberId(Long memberId);
 }
