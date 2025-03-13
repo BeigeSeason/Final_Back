@@ -8,9 +8,7 @@ import com.springboot.final_back.entity.elasticsearch.TourSpots;
 import com.springboot.final_back.entity.mysql.Bookmark;
 import com.springboot.final_back.entity.mysql.Member;
 import com.springboot.final_back.repository.BookmarkRepository;
-import com.springboot.final_back.repository.DiaryRepository;
 import com.springboot.final_back.repository.MemberRepository;
-import com.springboot.final_back.repository.TourSpotsRepository;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.index.query.BoolQueryBuilder;
@@ -46,9 +44,9 @@ public class SearchService {
     private final MemberRepository memberRepository;
     private final BookmarkRepository bookmarkRepository;
 
-    // 제목으로 다이어리 검색
-    public Page<DiarySearchListDto> searchByTitle(int page, int size, String keyword, String sort,
-                                                  int minPrice, int maxPrice, String areaCode, String sigunguCode) {
+    // 다이어리 검색
+    public Page<DiarySearchListDto> diarySearch(int page, int size, String keyword, String sort,
+                                                int minPrice, int maxPrice, String areaCode, String sigunguCode) {
         Sort defaultSort = Sort.by(Sort.Direction.DESC, "_score");
 
         Sort sortOrder;
@@ -74,21 +72,22 @@ public class SearchService {
         } else {
             if (keyword != null && !keyword.isEmpty()) {
                 if (keyword.startsWith("#")) {
-                    // 태그 검색: 공백으로 분리하고 # 제거
+                    // 태그 검색: 공백으로 분리
                     String[] tagArray = keyword.split("\\s+");
                     List<String> tags = Arrays.stream(tagArray)
                             .filter(tag -> !tag.isEmpty())
-                            .map(tag -> tag.startsWith("#") ? tag.substring(1) : tag) // # 제거
                             .toList();
-
                     if (!tags.isEmpty()) {
                         // tags 필드에서 모든 태그가 포함된 결과 검색
                         BoolQueryBuilder tagQuery = boolQuery();
                         for (String tag : tags) {
-                            tagQuery.must(QueryBuilders.termQuery("tags", tag));
+                            log.warn(tag);
+                            tagQuery.should(QueryBuilders.termQuery("tags", tag));
                         }
                         tagQuery.minimumShouldMatch(1); // 최소 1개 태그 매칭
                         boolQuery.must(tagQuery);
+
+                        log.info(boolQuery.toString());
                     }
                 } else {
                     // 일반 검색: title, content, region에서 검색

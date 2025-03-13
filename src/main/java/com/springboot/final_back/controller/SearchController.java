@@ -30,7 +30,7 @@ public class SearchController {
                                                                  @RequestParam(defaultValue = "0") int maxPrice,
                                                                  @RequestParam(required = false) String areaCode,
                                                                  @RequestParam(required = false) String sigunguCode) {
-        return new ResponseEntity<>(searchService.searchByTitle(page, size, keyword, sort, minPrice, maxPrice, areaCode, sigunguCode), HttpStatus.OK);
+        return new ResponseEntity<>(searchService.diarySearch(page, size, keyword, sort, minPrice, maxPrice, areaCode, sigunguCode), HttpStatus.OK);
     }
 
     @GetMapping("/tour-list")
