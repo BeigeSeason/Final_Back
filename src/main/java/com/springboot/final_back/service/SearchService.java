@@ -44,8 +44,6 @@ public class SearchService {
     private final ElasticsearchOperations elasticsearchOperations;
     private final MemberRepository memberRepository;
     private final BookmarkRepository bookmarkRepository;
-    private final DiaryRepository diaryRepository;
-    private final TourSpotsRepository tourSpotsRepository;
 
     // 제목으로 다이어리 검색
     public Page<DiarySearchListDto> searchByTitle(int page, int size, String keyword, String sort,
@@ -74,7 +72,7 @@ public class SearchService {
             boolQuery.must(QueryBuilders.matchAllQuery());
         } else {
             if (keyword != null && !keyword.isEmpty()) {
-                boolQuery.must(QueryBuilders.multiMatchQuery(keyword, "title", "content", "region"));
+                boolQuery.must(QueryBuilders.multiMatchQuery(keyword, "title.ngram", "content", "region"));
             }
             if (areaCode != null) boolQuery.filter(termQuery("area_code", areaCode));
             if (sigunguCode != null) boolQuery.filter(termQuery("sigungu_code", sigunguCode));
@@ -145,7 +143,7 @@ public class SearchService {
             boolQuery.must(QueryBuilders.matchAllQuery());
         } else {
             if (keyword != null && !keyword.isEmpty()) {
-                boolQuery.must(QueryBuilders.multiMatchQuery(keyword, "title", "addr1"));
+                boolQuery.must(QueryBuilders.multiMatchQuery(keyword, "title.ngram", "addr1.ngram"));
             }
             if (areaCode != null) boolQuery.filter(termQuery("area_code", areaCode));
             if (sigunguCode != null) boolQuery.filter(termQuery("sigungu_code", sigunguCode));

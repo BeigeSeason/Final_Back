@@ -196,8 +196,8 @@ public class TourSpotService {
     }
 
     // 상세정보 엘라스틱 서치에 저장하기
-    private void saveDetailToElasticsearch(String contentId, TourSpotDetailDto detailDto) {
-        UpdateQuery updateQuery = UpdateQuery.builder(contentId)
+    private void saveDetailToElasticsearch(String spotId, TourSpotDetailDto detailDto) {
+        UpdateQuery updateQuery = UpdateQuery.builder(spotId)
                 .withDocument(Document.from(Map.of(
                         "detail", Map.of(
                                 "images", detailDto.getImages(),
@@ -210,7 +210,7 @@ public class TourSpotService {
                 )))
                 .build();
         elasticsearchOperations.update(updateQuery, IndexCoordinates.of(INDEX_NAME));
-        log.info("관광지 {} 상세 정보 저장 완료", contentId);
+        log.info("관광지 {} 상세 정보 저장 완료", spotId);
     }
 
     @SuppressWarnings("unchecked") // JSON 응답 구조가 Map<String, Object>로 고정돼 있어 안전함

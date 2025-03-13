@@ -65,8 +65,8 @@ public class Diary {
     private List<String> tags;
 
     // 여행경비
-    @Field(type = FieldType.Float, name = "total_cost")
-    private Float totalCost;
+    @Field(type = FieldType.Integer, name = "total_cost")
+    private Integer totalCost;
 
     // 내용
     @MultiField(
@@ -91,7 +91,7 @@ public class Diary {
     private String sigunguCode;
 
     @Builder
-    private Diary(String diaryId, String title, String region, String areaCode, String sigunguCode, LocalDate startDate, LocalDate endDate, List<String> tags, Float totalCost, String content, Long memberId, boolean isPublic) {
+    private Diary(String diaryId, String title, String region, String areaCode, String sigunguCode, LocalDate startDate, LocalDate endDate, List<String> tags, Integer totalCost, String content, Long memberId, boolean isPublic) {
         this.diaryId = diaryId;
         this.title = title;
         this.region = region;

@@ -23,7 +23,7 @@ public class DiaryResDto {
     private LocalDate startDate; // 일정 시작일
     private LocalDate endDate;   // 일정 종료일
     private List<String> tags;     // 태그 (Set)
-    private Float totalCost;      // 여행 경비
+    private Integer totalCost;      // 여행 경비
     private String content;     // 내용
     private String nickname;
     private String ownerId;
