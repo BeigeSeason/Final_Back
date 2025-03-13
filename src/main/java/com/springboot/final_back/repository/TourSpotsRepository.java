@@ -20,4 +20,6 @@ public interface TourSpotsRepository extends ElasticsearchRepository<TourSpots, 
 
     @Query("{\"match_all\": {}}")
     List<String> findAllContentIds();
+
+    Optional<TourSpots> findById(String id);
 }

@@ -30,6 +30,7 @@ import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilde
 import org.springframework.data.elasticsearch.core.query.Query;
 import org.springframework.stereotype.Service;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -72,7 +73,27 @@ public class SearchService {
             boolQuery.must(QueryBuilders.matchAllQuery());
         } else {
             if (keyword != null && !keyword.isEmpty()) {
-                boolQuery.must(QueryBuilders.multiMatchQuery(keyword, "title.ngram", "content", "region"));
+                if (keyword.startsWith("#")) {
+                    // 태그 검색: 공백으로 분리하고 # 제거
+                    String[] tagArray = keyword.split("\\s+");
+                    List<String> tags = Arrays.stream(tagArray)
+                            .filter(tag -> !tag.isEmpty())
+                            .map(tag -> tag.startsWith("#") ? tag.substring(1) : tag) // # 제거
+                            .toList();
+
+                    if (!tags.isEmpty()) {
+                        // tags 필드에서 모든 태그가 포함된 결과 검색
+                        BoolQueryBuilder tagQuery = boolQuery();
+                        for (String tag : tags) {
+                            tagQuery.must(QueryBuilders.termQuery("tags", tag));
+                        }
+                        tagQuery.minimumShouldMatch(1); // 최소 1개 태그 매칭
+                        boolQuery.must(tagQuery);
+                    }
+                } else {
+                    // 일반 검색: title, content, region에서 검색
+                    boolQuery.must(QueryBuilders.multiMatchQuery(keyword, "title.ngram", "content", "region"));
+                }
             }
             if (areaCode != null) boolQuery.filter(termQuery("area_code", areaCode));
             if (sigunguCode != null) boolQuery.filter(termQuery("sigungu_code", sigunguCode));
