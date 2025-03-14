@@ -72,9 +72,8 @@ public class ReviewService {
         String[] parts = job.split("\\|");
         int retryCount = Integer.parseInt(parts[parts.length - 1]);
         if (retryCount >= 3) {
-            log.error("Max retries reached for review job: {}", job);
-            redisTemplate.opsForList().leftPush(REVIEW_DEAD_QUEUE, job); // 데드 큐로 이동
-            return;
+            log.error("Max retries reached, discarding review job: {}", job);
+            return; // 데드 큐 이동 대신 종료
         }
 
         try {
