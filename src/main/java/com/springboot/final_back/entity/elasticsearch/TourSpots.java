@@ -13,10 +13,11 @@ import java.util.List;
 @Data
 @Document(indexName = "tour_spots")
 public class TourSpots {
-    // 관광지 아이디
+    // 엘라스틱 서치 자체 아이디
     @Id
     private String id;
 
+    // 관광지 아이디
     @Field(name = "content_id", type = FieldType.Keyword)
     private String contentId;
 
@@ -60,6 +61,7 @@ public class TourSpots {
     @Field(type = FieldType.Keyword, name = "content_type_id")
     private String contentTypeId;
 
+    // 분류한 타입 아이디
     @Field(type = FieldType.Keyword, name = "classified_type_id")
     private String classifiedTypeId;
 
@@ -111,15 +113,19 @@ public class TourSpots {
     @Field(type = FieldType.Nested)
     private Detail detail;
 
+    // 리뷰 갯수
     @Field(type = FieldType.Float, name = "review_count")
     private int reviewCount;
 
+    // 총 점수
     @Field(type = FieldType.Float, name = "rating")
     private float rating;
 
+    // 평균 점수
     @Field(type = FieldType.Double, name = "avg_rating")
     private double avgRating;
 
+    // 북마크 갯수
     @Field(type = FieldType.Float, name = "bookmark_count")
     private int bookmarkCount;
 

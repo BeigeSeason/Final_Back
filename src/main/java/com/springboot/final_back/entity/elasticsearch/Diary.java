@@ -81,12 +81,15 @@ public class Diary {
     @Field(type = FieldType.Boolean, name = "is_public")
     private boolean isPublic;
 
+    // 북마크 갯수
     @Field(type = FieldType.Float, name = "bookmark_count")
     private int bookmarkCount;
 
+    // 시도코드
     @Field(type = FieldType.Text, name = "area_code")
     private String areaCode;
 
+    // 시군구 코드
     @Field(type = FieldType.Text, name = "sigungu_code")
     private String sigunguCode;
 
