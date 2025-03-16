@@ -165,4 +165,11 @@ public class TourSpots {
                 .bookmarkCount(bookmarkCount)
                 .build();
     }
+
+    public TourSpotListDto convertToSimpleDto() {
+        return TourSpotListDto.builder()
+                .spotId(contentId)
+                .thumbnail(firstImage)
+                .build();
+    }
 }

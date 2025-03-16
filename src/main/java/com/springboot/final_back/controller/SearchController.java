@@ -12,6 +12,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+import java.util.Map;
+
 @Slf4j
 @RestController
 @RequestMapping("/search")
@@ -47,6 +50,12 @@ public class SearchController {
     @GetMapping("/spot-detail")
     public ResponseEntity<TourSpotDetailDto> getTourSpotDetail(@RequestParam String tourSpotId) {
         return new ResponseEntity<>(tourSpotService.getTourSpotDetail(tourSpotId), HttpStatus.OK);
+    }
+
+    // 추천 사용 시 보여줄 썸네일과 여행지
+    @GetMapping("/recommend-spot")
+    public ResponseEntity<Map<String, List<TourSpotListDto>>> getRecommendTourSpot(@RequestParam List<String> keyword) {
+        return new ResponseEntity<>(searchService.get10SpotsRecommend(keyword), HttpStatus.OK);
     }
 
     // 나의 다이어리 목록 조회(비공개 포함)

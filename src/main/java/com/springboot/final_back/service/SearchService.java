@@ -28,10 +28,7 @@ import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilde
 import org.springframework.data.elasticsearch.core.query.Query;
 import org.springframework.stereotype.Service;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.elasticsearch.index.query.QueryBuilders.*;
@@ -163,7 +160,11 @@ public class SearchService {
             boolQuery.must(QueryBuilders.matchAllQuery());
         } else {
             if (keyword != null && !keyword.isEmpty()) {
-                boolQuery.must(QueryBuilders.multiMatchQuery(keyword, "title.ngram", "addr1.ngram"));
+                BoolQueryBuilder keywordQuery = boolQuery()
+                        .should(QueryBuilders.matchPhraseQuery("title", keyword).boost(10.0f)) // 원문 연속 매칭
+                        .should(QueryBuilders.multiMatchQuery(keyword, "title.ngram", "addr1.ngram").boost(1.0f)) // 부분 매칭
+                        .minimumShouldMatch(1);
+                boolQuery.must(keywordQuery);
             }
             if (areaCode != null) boolQuery.filter(termQuery("area_code", areaCode));
             if (sigunguCode != null) boolQuery.filter(termQuery("sigungu_code", sigunguCode));
@@ -301,6 +302,36 @@ public class SearchService {
         return new PageImpl<>(dtoList, pageable, searchHits.getTotalHits());
     }
 
+    // 10개의 키워드를 받아 각 키워드당 10개 추천 반환
+    public Map<String, List<TourSpotListDto>> get10SpotsRecommend(List<String> keywords) {
+        Map<String, List<TourSpotListDto>> resultMap = new HashMap<>();
+        Pageable pageable = PageRequest.of(0, 10); // 페이지 0, 최대 10개
+
+        for (String keyword : keywords) {
+            if (keyword == null || keyword.trim().isEmpty()) {
+                resultMap.put(keyword, List.of()); // 빈 키워드는 빈 리스트 반환
+                continue;
+            }
+
+            BoolQueryBuilder boolQuery = QueryBuilders.boolQuery()
+                    .must(QueryBuilders.matchPhraseQuery("title", keyword));
+
+            NativeSearchQueryBuilder queryBuilder = new NativeSearchQueryBuilder()
+                    .withQuery(boolQuery)
+                    .withPageable(pageable);
+
+            SearchHits<TourSpots> searchHits = elasticsearchOperations.search(queryBuilder.build(), TourSpots.class);
+
+            List<TourSpotListDto> lst = searchHits.getSearchHits().stream()
+                    .map(SearchHit::getContent)
+                    .map(TourSpots::convertToSimpleDto)
+                    .collect(Collectors.toList());
+
+            resultMap.put(keyword, lst);
+        }
+
+        return resultMap;
+    }
     // 공통 메서드: Diary 리스트를 DTO로 변환
     private List<DiarySearchListDto> mapToDiaryDtoList(List<Diary> diaries, Map<Long, Member> memberMap) {
         return diaries.stream()
