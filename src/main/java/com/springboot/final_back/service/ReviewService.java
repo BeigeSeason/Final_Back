@@ -30,7 +30,6 @@ public class ReviewService {
     private final RedisTemplate<String, String> redisTemplate;
 
     private static final String REVIEW_QUEUE = "review:queue";
-    private static final String REVIEW_DEAD_QUEUE = "review:dead";
 
     // 리뷰 추가 요청
     @Async

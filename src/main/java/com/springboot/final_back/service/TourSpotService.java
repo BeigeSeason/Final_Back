@@ -83,26 +83,18 @@ public class TourSpotService {
     }
 
     public TourSpotDetailDto getTourSpotDetail(String tourSpotId, int retryCount) {
-        long startTime = System.nanoTime();
         String cacheKey = "tourspot:detail:" + tourSpotId; // 캐시 키
 
         // 1. 캐시 확인 (락 없이)
         TourSpotDetailDto cached = tourSpotDetailRedisTemplate.opsForValue().get(cacheKey);
         if (cached != null) {
-            long endTime = System.nanoTime();
-            long durationMs = (endTime - startTime) / 1_000_000;
-            log.info("getTourSpotDetail(tourSpotId={}, retryCount={}) completed (Redis cached), took {}ms",
-                    tourSpotId, retryCount, durationMs);
+            log.info("Retrieved from Redis cache: {}", cached);
             return cached;
         }
 
         // 2. Elasticsearch 확인
         Optional<TourSpots> tourSpotOpt = tourSpotsRepository.findByContentId(tourSpotId);
         if (tourSpotOpt.isEmpty()) {
-            long endTime = System.nanoTime();
-            long durationMs = (endTime - startTime) / 1_000_000;
-            log.info("getTourSpotDetail(tourSpotId={}, retryCount={}) failed (no data), took {}ms",
-                    tourSpotId, retryCount, durationMs);
             throw new RuntimeException("해당 관광지 데이터가 없습니다: " + tourSpotId);
         }
 
@@ -112,19 +104,11 @@ public class TourSpotService {
             TourSpotDetailDto result = convertToDto(tourSpot, detail);
             if (!tourSpot.getFirstImage().isEmpty()) result.getImages().add(0, tourSpot.getFirstImage());
             tourSpotDetailRedisTemplate.opsForValue().set(cacheKey, result, 1, TimeUnit.HOURS); // Redis 캐시 저장
-            long endTime = System.nanoTime();
-            long durationMs = (endTime - startTime) / 1_000_000;
-            log.info("getTourSpotDetail(tourSpotId={}, retryCount={}) completed (ES cached), took {}ms",
-                    tourSpotId, retryCount, durationMs);
             return result;
         }
 
         // 3. API 호출 필요: 락 적용
         if (retryCount > 5) {
-            long endTime = System.nanoTime();
-            long durationMs = (endTime - startTime) / 1_000_000;
-            log.info("getTourSpotDetail(tourSpotId={}, retryCount={}) failed due to retry limit, took {}ms",
-                    tourSpotId, retryCount, durationMs);
             throw new RuntimeException("재시도 횟수 초과");
         }
 
@@ -134,10 +118,6 @@ public class TourSpotService {
                 // 락 내에서 캐시 재확인
                 TourSpotDetailDto recheckCached = tourSpotDetailRedisTemplate.opsForValue().get(cacheKey);
                 if (recheckCached != null) {
-                    long endTime = System.nanoTime();
-                    long durationMs = (endTime - startTime) / 1_000_000;
-                    log.info("getTourSpotDetail(tourSpotId={}, retryCount={}) completed (Redis cached in lock), took {}ms",
-                            tourSpotId, retryCount, durationMs);
                     return recheckCached;
                 }
 
@@ -149,18 +129,11 @@ public class TourSpotService {
                 detailDto.setMapX(tourSpot.getMapX());
                 detailDto.setMapY(tourSpot.getMapY());
                 detailDto.setNearSpots(findNearestTourSpots(tourSpot.getLocation(), tourSpot.getContentId()));
+                log.info("Caching TourSpotDetailDto with nearSpots: {}", detailDto.getNearSpots().toString());
                 // Redis 캐시 저장
                 tourSpotDetailRedisTemplate.opsForValue().set(cacheKey, detailDto, 1, TimeUnit.HOURS);
-                long endTime = System.nanoTime();
-                long durationMs = (endTime - startTime) / 1_000_000;
-                log.info("getTourSpotDetail(tourSpotId={}, retryCount={}) completed (API fetch), took {}ms",
-                        tourSpotId, retryCount, durationMs);
                 return detailDto;
             } catch (Exception e) {
-                long endTime = System.nanoTime();
-                long durationMs = (endTime - startTime) / 1_000_000;
-                log.error("getTourSpotDetail(tourSpotId={}, retryCount={}) error: {}, took {}ms",
-                        tourSpotId, retryCount, e.getMessage(), durationMs);
                 throw new RuntimeException("상세 정보를 가져오지 못했습니다.");
             } finally {
                 redisTemplate.delete(lockKey);
@@ -168,17 +141,8 @@ public class TourSpotService {
         } else {
             try {
                 Thread.sleep(100);
-                TourSpotDetailDto result = getTourSpotDetail(tourSpotId, retryCount + 1);
-                long endTime = System.nanoTime();
-                long durationMs = (endTime - startTime) / 1_000_000;
-                log.info("getTourSpotDetail(tourSpotId={}, retryCount={}) completed (after retry), took {}ms",
-                        tourSpotId, retryCount, durationMs);
-                return result;
+                return getTourSpotDetail(tourSpotId, retryCount + 1);
             } catch (InterruptedException e) {
-                long endTime = System.nanoTime();
-                long durationMs = (endTime - startTime) / 1_000_000;
-                log.error("getTourSpotDetail(tourSpotId={}, retryCount={}) interrupted, took {}ms",
-                        tourSpotId, retryCount, durationMs);
                 Thread.currentThread().interrupt();
                 throw new RuntimeException("대기 중 인터럽트 발생", e);
             }
@@ -316,7 +280,7 @@ public class TourSpotService {
     }
 
     // GeoPoint로 가까운 TourSpots 10개 가져오기
-    public Page<TourSpotListDto> findNearestTourSpots(GeoPoint point, String exceptId) {
+    public List<TourSpotListDto> findNearestTourSpots(GeoPoint point, String exceptId) {
         Pageable pageable = PageRequest.of(0, 10);
 
         // GeoDistance 정렬 설정
@@ -340,14 +304,12 @@ public class TourSpotService {
         SearchHits<TourSpots> searchHits = elasticsearchOperations.search(query, TourSpots.class);
         if (searchHits.isEmpty()) {
             log.debug("No tour spots found near lat: {}, lon: {}", point.getLat(), point.getLon());
-            return Page.empty(pageable);
+            return Collections.emptyList();
         }
 
-        List<TourSpotListDto> dtoList = searchHits.getSearchHits().stream()
+        return searchHits.getSearchHits().stream()
                 .map(this::mapToMinimalDto)
                 .collect(Collectors.toList());
-
-        return new PageImpl<>(dtoList, pageable, searchHits.getTotalHits());
     }
 
     private TourSpotDetailDto convertToDto(TourSpots tourSpot, TourSpots.Detail detail) {

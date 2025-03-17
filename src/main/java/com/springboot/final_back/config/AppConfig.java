@@ -1,7 +1,9 @@
 package com.springboot.final_back.config;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.PropertyAccessor;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.springboot.final_back.dto.tourspot.TourSpotDetailDto;
-import com.springboot.final_back.dto.tourspot.TourSpotStats;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
@@ -32,8 +34,17 @@ public class AppConfig {
     public RedisTemplate<String, TourSpotDetailDto> tourSpotDetailRedisTemplate(RedisConnectionFactory connectionFactory) {
         RedisTemplate<String, TourSpotDetailDto> template = new RedisTemplate<>();
         template.setConnectionFactory(connectionFactory);
+
+        Jackson2JsonRedisSerializer<TourSpotDetailDto> serializer = new Jackson2JsonRedisSerializer<>(TourSpotDetailDto.class);
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);
+        objectMapper.enableDefaultTyping(ObjectMapper.DefaultTyping.NON_FINAL); // 다형성 지원
+
+        serializer.setObjectMapper(objectMapper);
+
+
+        template.setValueSerializer(serializer);
         template.setKeySerializer(new StringRedisSerializer());
-        template.setValueSerializer(new Jackson2JsonRedisSerializer<>(TourSpotDetailDto.class));
         template.afterPropertiesSet();
         return template;
     }
