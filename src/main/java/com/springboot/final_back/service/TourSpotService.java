@@ -100,18 +100,18 @@ public class TourSpotService {
 
         TourSpots tourSpot = tourSpotOpt.get();
         TourSpots.Detail detail = tourSpot.getDetail();
+        // 최초 조회 시 중복 Api 호출을 막기 위한 캐싱이기 때문에 일반 조회는 캐싱하지 않는다.
         if (detail != null) {
             TourSpotDetailDto result = convertToDto(tourSpot, detail);
             if (!tourSpot.getFirstImage().isEmpty()) result.getImages().add(0, tourSpot.getFirstImage());
-            tourSpotDetailRedisTemplate.opsForValue().set(cacheKey, result, 1, TimeUnit.HOURS); // Redis 캐시 저장
             return result;
         }
 
-        // 3. API 호출 필요: 락 적용
         if (retryCount > 5) {
             throw new RuntimeException("재시도 횟수 초과");
         }
 
+        // 3. API 호출 필요: 락 적용
         String lockKey = "lock:tourspot:" + tourSpotId;
         if (Boolean.TRUE.equals(redisTemplate.opsForValue().setIfAbsent(lockKey, "locked", 10, TimeUnit.SECONDS))) {
             try {
@@ -131,7 +131,7 @@ public class TourSpotService {
                 detailDto.setNearSpots(findNearestTourSpots(tourSpot.getLocation(), tourSpot.getContentId()));
                 log.info("Caching TourSpotDetailDto with nearSpots: {}", detailDto.getNearSpots().toString());
                 // Redis 캐시 저장
-                tourSpotDetailRedisTemplate.opsForValue().set(cacheKey, detailDto, 1, TimeUnit.HOURS);
+                tourSpotDetailRedisTemplate.opsForValue().set(cacheKey, detailDto, 5, TimeUnit.MINUTES);
                 return detailDto;
             } catch (Exception e) {
                 throw new RuntimeException("상세 정보를 가져오지 못했습니다.");
