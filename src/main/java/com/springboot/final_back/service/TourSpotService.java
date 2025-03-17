@@ -82,13 +82,57 @@ public class TourSpotService {
         return getTourSpotDetail(tourSpotId, 0);
     }
 
-    public TourSpotDetailDto getTourSpotDetail(String tourSpotId, int retryCount) {
+    /*public TourSpotDetailDto getTourSpotDetail(String tourSpotId, int retryCount) {
+        if (retryCount > 8) throw new RuntimeException("재시도 횟수 초과");
+        String lockKey = "lock:tourspot:" + tourSpotId; // 고유 락 키
+        if (Boolean.TRUE.equals(redisTemplate.opsForValue().setIfAbsent(lockKey, "locked", 10, TimeUnit.SECONDS))) {
+            try {
+                Optional<TourSpots> tourSpotOpt = tourSpotsRepository.findByContentId(tourSpotId);
+                if (tourSpotOpt.isPresent()) {
+                    TourSpots tourSpot = tourSpotOpt.get();
+                    TourSpots.Detail detail = tourSpot.getDetail();
+                    if (detail != null) {
+                        if (!tourSpot.getFirstImage().isEmpty()) detail.getImages().add(0, tourSpot.getFirstImage());
+                        return convertToDto(tourSpot, detail);
+                    }
+                    TourSpotDetailDto detailDto = fetchDetailFromApi(tourSpotId, tourSpot.getContentTypeId());
+                    saveDetailToElasticsearch(tourSpot.getId(), detailDto);
+                    if (!tourSpot.getFirstImage().isEmpty()) detailDto.getImages().add(0, tourSpot.getFirstImage());
+                    detailDto.setAddr1(tourSpot.getAddr1());
+                    detailDto.setMapX(tourSpot.getMapX());
+                    detailDto.setMapY(tourSpot.getMapY());
+                    detailDto.setNearSpots(findNearestTourSpots(tourSpot.getLocation(), tourSpot.getContentId()));
+                    return detailDto;
+                } else {
+                    throw new RuntimeException("해당 관광지 데이터가 없습니다: " + tourSpotId);
+                }
+            } catch (Exception e) {
+                log.error("상세 정보 조회 중 오류: {}", e.getMessage());
+                throw new RuntimeException("상세 정보를 가져오지 못했습니다.");
+            } finally {
+                redisTemplate.delete(lockKey); // 락 해제
+            }
+        } else {
+            // 락을 획득하지 못한 경우 대기 후 재시도
+            try {
+                Thread.sleep(150); // 150ms 대기
+                return getTourSpotDetail(tourSpotId, retryCount + 1); // 재귀 호출
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new RuntimeException("대기 중 인터럽트 발생", e);
+            }
+        }
+    }*/
+
+   public TourSpotDetailDto getTourSpotDetail(String tourSpotId, int retryCount) {
+        long startTime = System.currentTimeMillis();
         String cacheKey = "tourspot:detail:" + tourSpotId; // 캐시 키
 
         // 1. 캐시 확인 (락 없이)
         TourSpotDetailDto cached = tourSpotDetailRedisTemplate.opsForValue().get(cacheKey);
         if (cached != null) {
-            log.info("Retrieved from Redis cache: {}", cached);
+            long endTime = System.currentTimeMillis();
+            log.info("캐시 히트: {} ms", endTime - startTime);
             return cached;
         }
 
@@ -104,10 +148,12 @@ public class TourSpotService {
         if (detail != null) {
             TourSpotDetailDto result = convertToDto(tourSpot, detail);
             if (!tourSpot.getFirstImage().isEmpty()) result.getImages().add(0, tourSpot.getFirstImage());
+            long endTime = System.currentTimeMillis();
+            log.info("이미 존재함: {} ms", endTime - startTime);
             return result;
         }
 
-        if (retryCount > 5) {
+        if (retryCount > 10) {
             throw new RuntimeException("재시도 횟수 초과");
         }
 
@@ -118,6 +164,8 @@ public class TourSpotService {
                 // 락 내에서 캐시 재확인
                 TourSpotDetailDto recheckCached = tourSpotDetailRedisTemplate.opsForValue().get(cacheKey);
                 if (recheckCached != null) {
+                    long endTime = System.currentTimeMillis();
+                    log.info("락 내에서 캐시 재확인: {} ms", endTime - startTime);
                     return recheckCached;
                 }
 
@@ -132,6 +180,8 @@ public class TourSpotService {
                 log.info("Caching TourSpotDetailDto with nearSpots: {}", detailDto.getNearSpots().toString());
                 // Redis 캐시 저장
                 tourSpotDetailRedisTemplate.opsForValue().set(cacheKey, detailDto, 5, TimeUnit.MINUTES);
+                long endTime = System.currentTimeMillis();
+                log.info("API 호출 후 반환 : {} ms", endTime - startTime);
                 return detailDto;
             } catch (Exception e) {
                 throw new RuntimeException("상세 정보를 가져오지 못했습니다.");
@@ -140,7 +190,7 @@ public class TourSpotService {
             }
         } else {
             try {
-                Thread.sleep(100);
+                Thread.sleep(150);
                 return getTourSpotDetail(tourSpotId, retryCount + 1);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
