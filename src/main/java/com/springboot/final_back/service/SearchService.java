@@ -348,6 +348,9 @@ public class SearchService {
                             .writer(author.getNickname())
                             .writerImg(author.getImgPath() != null ? author.getImgPath() : null)
                             .createdAt(diary.getCreatedTime())
+                            .startDate(diary.getStartDate())
+                            .endDate(diary.getEndDate())
+                            .region(diary.getRegion())
                             .build();
                 })
                 .toList();

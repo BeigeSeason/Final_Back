@@ -2,6 +2,7 @@ package com.springboot.final_back.dto.diary;
 
 import lombok.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Getter
@@ -18,4 +19,7 @@ public class DiarySearchListDto {
     private String writer; // 작성자
     private String writerImg; // 작성자 프로필 이미지
     private LocalDateTime createdAt; // 작성일
+    private LocalDate startDate; // 일정 시작일
+    private LocalDate endDate;   // 일정 종료일
+    private String region;      // 지역
 }
