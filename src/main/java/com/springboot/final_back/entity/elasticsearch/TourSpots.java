@@ -169,6 +169,7 @@ public class TourSpots {
     public TourSpotListDto convertToSimpleDto() {
         return TourSpotListDto.builder()
                 .spotId(contentId)
+                .title(title)
                 .thumbnail(firstImage)
                 .build();
     }
