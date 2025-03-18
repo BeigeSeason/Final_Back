@@ -1,5 +1,6 @@
 package com.springboot.final_back.repository;
 
+import com.springboot.final_back.entity.mysql.Member;
 import com.springboot.final_back.entity.mysql.Review;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.data.domain.Page;
@@ -26,4 +27,6 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
     Double avgRatingByTourSpotId(@Param("tourSpotId") String tourSpotId);
 
     Page<Review> findAllByTourSpotId(String tourSpotId, Pageable pageable);
+
+    Page<Review> findAllByMember(Member member, Pageable pageable);
 }

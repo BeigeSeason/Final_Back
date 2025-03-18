@@ -15,4 +15,6 @@ public class ReviewResDto {
     private LocalDateTime createdAt; // 작성일
     private float rating;  // 점수
     private String content; // 내용
+    private String tourspotId; // 관광지 id
+    private String tourspotTitle; // 관광지명
 }

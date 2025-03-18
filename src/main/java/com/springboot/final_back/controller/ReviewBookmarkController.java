@@ -54,7 +54,7 @@ public class ReviewBookmarkController {
 
     // 북마크 삭제
     @PostMapping("/delete-bookmark")
-    public ResponseEntity<Boolean> deleteBookmark(@RequestParam String targetId, @RequestParam String userId) {
+    public ResponseEntity<Void> deleteBookmark(@RequestParam String targetId, @RequestParam String userId) {
         bookmarkService.deleteBookmarkAsync(targetId, userId);
         return ResponseEntity.ok().build();
     }
@@ -72,5 +72,13 @@ public class ReviewBookmarkController {
                                                          @RequestParam int size,
                                                          @RequestParam String tourSpotId) {
         return new ResponseEntity<>(reviewService.getReviews(page, size, tourSpotId), HttpStatus.OK);
+    }
+
+    // 내가 작성한 리뷰 조회
+    @GetMapping("/my-review-list")
+    public ResponseEntity<Page<ReviewResDto>> getMyReviews(@RequestParam int page,
+                                                         @RequestParam int size,
+                                                         @RequestParam String userId) {
+        return new ResponseEntity<>(reviewService.getMyReviews(page, size, userId), HttpStatus.OK);
     }
 }

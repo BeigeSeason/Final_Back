@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -177,6 +178,37 @@ public class ReviewService {
                             .build();
                 })
                 .toList();
+
+        return new PageImpl<>(reviewResDtoList, pageable, reviews.getTotalElements());
+    }
+
+    // 내가 작성한 리뷰 조회
+    public Page<ReviewResDto> getMyReviews(int page, int size, String userId) {
+        Sort sort = Sort.by(Sort.Direction.DESC, "createdAt");
+        Pageable pageable = PageRequest.of(page, size, sort);
+
+        Member member = memberRepository.findByUserId(userId)
+                .orElseThrow(() -> new RuntimeException("존재하지 않는 사용자"));
+
+        Page<Review> reviews = reviewRepository.findAllByMember(member, pageable);
+
+        List<ReviewResDto> reviewResDtoList = reviews.stream()
+                .map(review -> {
+                    TourSpots tourSpot = tourSpotsRepository.findByContentId(review.getTourSpotId())
+                            .orElseThrow(() -> new RuntimeException("Tour spot not found"));
+                    return ReviewResDto.builder()
+                            .id(review.getId())
+                            .memberId(member.getUserId())
+                            .nickname(member.getNickname())
+                            .profileImg(member.getImgPath())
+                            .createdAt(review.getCreatedAt())
+                            .rating(review.getRating())
+                            .content(review.getContent())
+                            .tourspotId(tourSpot.getContentId())
+                            .tourspotTitle(tourSpot.getTitle())
+                            .build();
+                })
+                .collect(Collectors.toList());
 
         return new PageImpl<>(reviewResDtoList, pageable, reviews.getTotalElements());
     }
