@@ -15,7 +15,7 @@ import java.util.Optional;
 
 @Repository
 public interface ReviewRepository extends JpaRepository<Review, Long> {
-    @NotNull Optional<Review> findById(@NotNull Long id);
+    Optional<Review> findById(Long id);
 
     @Query("SELECT r.tourSpotId, COUNT(r), AVG(r.rating) FROM Review r WHERE r.tourSpotId IN :ids GROUP BY r.tourSpotId")
     List<Object[]> findStatsByTourSpotIds(@Param("ids") List<String> tourSpotIds);

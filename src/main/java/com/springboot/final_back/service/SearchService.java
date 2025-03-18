@@ -253,8 +253,8 @@ public class SearchService {
 
         Member member = memberRepository.findByUserId(userId).orElseThrow(() -> new RuntimeException("Member not found"));
 
-        Page<Bookmark> bookmarkedDiariesPage = bookmarkRepository.findByMemberAndType(member, Type.DIARY, pageable);
-        List<String> diaryIds = bookmarkedDiariesPage.getContent().stream()
+        List<Bookmark> bookmarkedDiaries = bookmarkRepository.findByMemberAndType(member, Type.DIARY);
+        List<String> diaryIds = bookmarkedDiaries.stream()
                 .map(Bookmark::getBookmarkedId)
                 .collect(Collectors.toList());
 
@@ -282,8 +282,8 @@ public class SearchService {
 
         Member member = memberRepository.findByUserId(userId).orElseThrow(() -> new RuntimeException("Member not found"));
 
-        Page<Bookmark> bookmarkedTourSpotsPage = bookmarkRepository.findByMemberAndType(member, Type.TOURSPOT, pageable);
-        List<String> tourSpotIds = bookmarkedTourSpotsPage.getContent().stream()
+        List<Bookmark> bookmarkedTourSpots = bookmarkRepository.findByMemberAndType(member, Type.TOURSPOT);
+        List<String> tourSpotIds = bookmarkedTourSpots.stream()
                 .map(Bookmark::getBookmarkedId)
                 .collect(Collectors.toList());
 

@@ -130,11 +130,13 @@ public class BookmarkService {
             Diary diary = diaryRepository.findByDiaryId(targetId)
                     .orElseThrow(() -> new RuntimeException("Diary not found"));
             diary.setBookmarkCount(diary.getBookmarkCount() + delta);
+            log.info("Bookmark count updated: {}", diary.getBookmarkCount());
             diaryRepository.save(diary);
         } else {
             TourSpots tourSpot = tourSpotsRepository.findByContentId(targetId)
                     .orElseThrow(() -> new RuntimeException("Tour spot not found"));
             tourSpot.setBookmarkCount(tourSpot.getBookmarkCount() + delta);
+            log.info("Bookmark count updated: {}", tourSpot.getBookmarkCount());
             tourSpotsRepository.save(tourSpot);
         }
     }

@@ -23,5 +23,5 @@ public interface BookmarkRepository extends JpaRepository<Bookmark, Long> {
     List<Object[]> findBookmarkCountsByTourSpotIds(@Param("ids") List<String> tourSpotIds);
 
     Optional<Bookmark> findByMemberAndBookmarkedId(Member member, String bookmarkedId);
-    Page<Bookmark> findByMemberAndType(Member member, Type type, Pageable pageable);
+    List<Bookmark> findByMemberAndType(Member member, Type type);
 }
