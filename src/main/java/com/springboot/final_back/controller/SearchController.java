@@ -53,8 +53,8 @@ public class SearchController {
     }
 
     // 추천 사용 시 보여줄 썸네일과 여행지
-    @GetMapping("/recommend-spot")
-    public ResponseEntity<Map<String, List<TourSpotListDto>>> getRecommendTourSpot(@RequestParam List<String> keyword) {
+    @PostMapping("/recommend-spot")
+    public ResponseEntity<Map<String, List<TourSpotListDto>>> getRecommendTourSpot(@RequestBody List<String> keyword) {
         return new ResponseEntity<>(searchService.get10SpotsRecommend(keyword), HttpStatus.OK);
     }
 

@@ -313,8 +313,9 @@ public class SearchService {
                 continue;
             }
 
-            BoolQueryBuilder boolQuery = QueryBuilders.boolQuery()
-                    .must(QueryBuilders.matchPhraseQuery("title", keyword));
+            BoolQueryBuilder boolQuery = boolQuery()
+                    .should(QueryBuilders.matchPhraseQuery("title", keyword)) // 원문 연속 매칭
+                    .minimumShouldMatch(1);
 
             NativeSearchQueryBuilder queryBuilder = new NativeSearchQueryBuilder()
                     .withQuery(boolQuery)
