@@ -16,8 +16,8 @@ import java.time.LocalDateTime;
 public class ReportResDto {
     private Long id;
     private String reportType;
-    private Member reporter;
-    private Member reported;
+    private Long reporter;
+    private Long reported;
     private String reportEntity;
 //    private Diary diaryId;
 //    private Review reviewId;
@@ -32,8 +32,8 @@ public class ReportResDto {
         return ReportResDto.builder()
                 .id(report.getId())
                 .reportType(String.valueOf(report.getReportType()))
-                .reporter(report.getReporter())
-                .reported(report.getReported())
+                .reporter(report.getReporter().getId())
+                .reported(report.getReported().getId())
                 .reportEntity(report.getReportEntity())
                 .reason(report.getReason())
                 .createdAt(report.getCreatedAt())
