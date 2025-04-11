@@ -1,35 +1,43 @@
-## 📁 폴더 구조 (`src/` 기준)
+## 📁 폴더 구조 (`src/main/java/com/springboot/final_back` 기준)
 
 ```
-src/
+src/main/java/com/springboot/final_back/
 
-  ├── api/        : Axios를 활용한 API 요청 함수들을 모아둔 폴더입니다.
+  ├── config/       : 전역 설정 파일이 위치하며, 프로젝트 전반의 설정을 담당합니다.
   
-  ├── component/  : 페이지에서 분리한 공통 컴포넌트 및 재사용 가능한 UI 요소들이 위치해 있습니다.
+  ├── constant/     : 고정된 값을 상수로 정의하여 재사용성을 높이는 폴더입니다.
   
-  ├── context/    : 토스트 메시지 전역 관리와 관련된 기능을 제공하는 컨텍스트와 훅이 포함돼 있습니다.
+  ├── controller/   : 클라이언트의 요청을 처리하는 REST API 엔드포인트들이 위치합니다.
   
-  ├── img/        : 프로젝트에서 사용하는 이미지 파일들을 보관합니다.
+  ├── dto/          : 요청(Request) 및 응답(Response)에 사용되는 데이터 전송 객체들이 정의됩니다.
   
-  ├── page/       : 실제 화면에 렌더링되는 주요 페이지 컴포넌트들이 위치한 폴더입니다.
+  ├── entity/       : 데이터베이스 테이블과 매핑되는 JPA 엔티티 클래스들이 정의됩니다.
 
-  ├── redux/      : 사용자 인증 정보를 관리하는 리덕스 상태 및 액션, 스토어 설정 파일입니다.
+  ├── exception/    : 사용자 정의 예외 클래스를 포함하며, 오류 상황에 대한 처리와 응답을 담당합니다.
   
-  ├── style/      : styled-components로 작성한 스타일 정의 파일들이 있으며, 각 페이지와 연결됩니다.
+  ├── jwt/          : JWT 토큰의 생성 및 검증, 필터 처리를 담당하는 클래스들이 위치합니다.
+    
+  ├── repository/   : JPA를 사용한 DB 접근 인터페이스 계층입니다.
+    
+  ├── schedule/     : 주기적인 작업(Cron)을 처리하는 스케줄링 클래스들이 위치합니다.
+    
+  ├── security/     : 인증·인가 관련 설정 및 보안 유틸 클래스들이 위치합니다.
 
-  ├── types/      : 애플리케이션 전역에서 재사용되는 TypeScript 타입 정의들이 위치한 폴더입니다.
-  
-  └── util/       : 유틸 함수 및 공통 사용 데이터(지역 코드 등)들을 모아둔 폴더입니다.
+  └── service/      : 비즈니스 로직을 처리하는 서비스 계층입니다.
 ```
 
 <br/>
 
-## 📦 패키지 설치 및 실행 방법
+## 📦 의존성 설치 및 실행 방법
 
 ```bash
-yarn install
-yarn start
+./gradlew build
+java -jar build/libs/final_back-0.0.1-SNAPSHOT.jar
 ```
+
+>Swagger UI 확인: http://localhost:8111/swagger-ui.html
+
+<br/>
 
 단, `.env` 파일이 있어야 정상적으로 작동합니다.
 
@@ -39,24 +47,18 @@ yarn start
 
 ## 🧱 개발 환경
 
-- **React** `19.0.0`
+- **Java** `17`
 
-- **Styled-components** `6.1.15`
+- **Spring Boot** `2.7.17`
 
-- **React Chartjs 2** `5.3.0`
+- **Lombok** `1.18.24`
 
-- **Firebase** `11.3.1`
+- **JWT** `0.11.2`
 
-- **Kakao Maps SDK** `1.1.27`
+- **JSoup** `1.17.2`
 
-- **React Quill** `2.0.0`
+- **Elasticsearch** `7.17.12`
 
-- **Quill Image Resize Module** `3.0.3`  
+- **Swagger** `2.9.2`
 
-- **Swiper** `11.2.4`  
-
-- **Uuid** `11.1.0`
-
-- **Jwt Decode** `4.0.0`
-
-- **React Datepicker** `8.1.0`
+- **Gradle** `8.12.1`
