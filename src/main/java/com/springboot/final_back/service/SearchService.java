@@ -61,7 +61,6 @@ public class SearchService {
         Pageable pageable = PageRequest.of(page, size, sortOrder);
         BoolQueryBuilder boolQuery = boolQuery();
 
-
         boolean hasFilters = keyword != null || areaCode != null || sigunguCode != null || minPrice != 0 || maxPrice != 0;
 
         if (!hasFilters) {
@@ -83,8 +82,6 @@ public class SearchService {
                         }
                         tagQuery.minimumShouldMatch(1); // 최소 1개 태그 매칭
                         boolQuery.must(tagQuery);
-
-                        log.info(boolQuery.toString());
                     }
                 } else {
                     // 일반 검색: title, content, region에서 검색
@@ -333,6 +330,7 @@ public class SearchService {
 
         return resultMap;
     }
+
     // 공통 메서드: Diary 리스트를 DTO로 변환
     private List<DiarySearchListDto> mapToDiaryDtoList(List<Diary> diaries, Map<Long, Member> memberMap) {
         return diaries.stream()
@@ -391,23 +389,4 @@ public class SearchService {
             return null;
         }
     }
-
-    /*
-    // 정규표현식을 통한 HTML 파싱
-    private String extractFirstImageSrc(String content) {
-        if (content == null || !content.contains("<img")) {
-            return null;
-        }
-        try {
-            Pattern pattern = Pattern.compile("<img\\s+[^>]*src=['\"](.*?)['\"]");
-            Matcher matcher = pattern.matcher(content);
-            if (matcher.find()) {
-                return matcher.group(1);
-            }
-            return null;
-        } catch (Exception e) {
-            log.warn("Failed to extract image src from content: {}", content, e);
-            return null;
-        }
-    }*/
 }

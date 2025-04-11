@@ -14,6 +14,9 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -23,19 +26,19 @@ public class BookmarkService {
     private final TourSpotsRepository tourSpotsRepository;
     private final MemberRepository memberRepository;
     private final DiaryRepository diaryRepository;
-    private final RedisTemplate<String, String> redisTemplate;
 
-    private static final String BOOKMARK_QUEUE = "bookmark:queue";
-    private static final String BOOKMARK_DEAD_QUEUE = "bookmark:dead";
+    // 메모리 내 큐로 대체
+    private final Queue<String> bookmarkQueue = new ConcurrentLinkedQueue<>();
 
     // 북마크 추가 요청
     @Async
     public void addBookmarkAsync(String targetId, String userId, String typeStr) {
         try {
-            Type.valueOf(typeStr); // 유효성 사전 검사
-            String job = String.format("ADD|%s|%s|%s|0", targetId, userId, typeStr);
-            redisTemplate.opsForList().leftPush(BOOKMARK_QUEUE, job);
-            log.info("Queued bookmark add: {}", job);
+            Type type = Type.valueOf(typeStr); // 유효성 사전 검사
+            Member member = memberRepository.findByUserId(userId)
+                    .orElseThrow(() -> new RuntimeException("존재하지 않는 사용자"));
+            addBookmark(member, targetId, type); // 큐 대신 직접 호출
+            log.info("Bookmark added: targetId={}, userId={}, type={}", targetId, userId, typeStr);
         } catch (IllegalArgumentException e) {
             log.error("Invalid bookmark type: {}", typeStr, e);
             throw new RuntimeException("유효하지 않은 타입: " + typeStr);
@@ -45,16 +48,22 @@ public class BookmarkService {
     // 북마크 삭제 요청
     @Async
     public void deleteBookmarkAsync(String targetId, String userId) {
-        String job = String.format("DELETE|%s|%s|0", targetId, userId);
-        redisTemplate.opsForList().leftPush(BOOKMARK_QUEUE, job);
-        log.info("Queued bookmark delete: {}", job);
+        try {
+            Member member = memberRepository.findByUserId(userId)
+                    .orElseThrow(() -> new RuntimeException("존재하지 않는 사용자"));
+            deleteBookmark(member, targetId); // 큐 대신 직접 호출
+            log.info("Bookmark deleted: targetId={}, userId={}", targetId, userId);
+        } catch (Exception e) {
+            log.error("Error deleting bookmark: targetId={}, userId={}", targetId, userId, e);
+            throw e; // 예외를 다시 던져 호출자가 처리하도록 함
+        }
     }
 
-    // 큐 처리
+    // 큐 처리 (옵션: 필요 시 메모리 큐를 사용할 경우)
     @Scheduled(fixedDelay = 1000)
     @Async
     public void processBookmarkQueue() {
-        String job = redisTemplate.opsForList().rightPop(BOOKMARK_QUEUE);
+        String job = bookmarkQueue.poll(); // 큐에서 작업 가져오기
         if (job == null) {
             log.debug("Bookmark queue is empty");
             return;
@@ -64,7 +73,7 @@ public class BookmarkService {
         int retryCount = Integer.parseInt(parts[parts.length - 1]);
         if (retryCount >= 3) {
             log.error("Max retries reached, discarding bookmark job: {}", job);
-            return; // 데드 큐 이동 대신 종료
+            return;
         }
 
         try {
@@ -91,7 +100,7 @@ public class BookmarkService {
         } catch (Exception e) {
             log.error("Error processing bookmark job: {}, retrying (count: {})", job, retryCount, e);
             String updatedJob = buildUpdatedJob(parts, retryCount);
-            redisTemplate.opsForList().leftPush(BOOKMARK_QUEUE, updatedJob);
+            bookmarkQueue.offer(updatedJob); // 실패 시 큐에 다시 추가
         }
     }
 
