@@ -21,19 +21,16 @@ import java.util.Map;
 @RestController
 @RequestMapping("/admin")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:3000")
 public class AdminController {
     private final AdminService adminService;
     private final ReportService reportService;
-    private final DiaryService diaryService;
-    private final ReviewService reviewService;
 
     // 멤버 조회
     @GetMapping("/member-list")
     public ResponseEntity<Map<String, Object>> getAllMembers(@RequestParam(defaultValue = "0") int page,
-                                                            @RequestParam(defaultValue = "10") int size,
-                                                            @RequestParam(required = false) String searchType,
-                                                            @RequestParam(required = false) String searchValue,
+                                                             @RequestParam(defaultValue = "10") int size,
+                                                             @RequestParam(required = false) String searchType,
+                                                             @RequestParam(required = false) String searchValue,
                                                              @RequestParam(required = false) Boolean type,
                                                              @RequestParam(required = false) String sort) {
         Page<MemberResDto> members = adminService.getMemberAllList(page, size, searchType, searchValue, type, sort);
@@ -65,9 +62,9 @@ public class AdminController {
     @PostMapping("/report-manage")
     @Transactional
     public ResponseEntity<Boolean> reportManage(@RequestBody ReportManageReq request) {
-            boolean isSuccess = adminService.reportProcess(request);
-            return isSuccess ? ResponseEntity.ok(true)
-                             : ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(false);
+        boolean isSuccess = adminService.reportProcess(request);
+        return isSuccess ? ResponseEntity.ok(true)
+                : ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(false);
     }
 
     // 유저 정지
