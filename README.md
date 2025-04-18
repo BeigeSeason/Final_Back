@@ -61,6 +61,4 @@ java -jar build/libs/final_back-0.0.1-SNAPSHOT.jar
 
 - **Swagger** `2.9.2`
 
-- **Dotenv** `5.2.2`
-
 - **Gradle** `8.12.1`

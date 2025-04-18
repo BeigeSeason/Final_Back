@@ -43,8 +43,9 @@ public class WebSecurityConfig implements WebMvcConfigurer {
                 .accessDeniedHandler(jwtAccessDeniedHandler)
                 .and()
                 .authorizeRequests()
-                .antMatchers("/", "/static/**", "/auth/signup","/auth/login", "/diary/diary-detail/", "/report/**", "/search/**","/review-bookmark/review-list").permitAll()
-                .antMatchers("/diary/change-ispublic", "/diary/post-diary", "diary/edit-diary", "diary/delete/",
+                .antMatchers("/", "/static/**", "/auth/signup","/auth/login", "/diary/diary-detail/**",
+                        "/report/**", "/search/**","/review-bookmark/review-list", "/flask/**").permitAll()
+                .antMatchers("/diary/change-ispublic", "/diary/post-diary", "diary/edit-diary", "diary/delete",
                         "/auth/token-refreshing", "/auth/update", "/auth/sign-out",
                         "/review-bookmark/**").authenticated()
                 .antMatchers("/admin/**").hasRole("ADMIN")
@@ -62,7 +63,7 @@ public class WebSecurityConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**") // 모든 경로에 대해 CORS 허용
-                .allowedOrigins("http://localhost:3000") // 허용할 프론트엔드 주소
+                .allowedOrigins("https://gotgam.store") // 허용할 프론트엔드 주소
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS") // 허용할 HTTP 메서드
                 .allowedHeaders("*") // 모든 헤더를 허용
                 .allowCredentials(true); // 자격 증명 허용

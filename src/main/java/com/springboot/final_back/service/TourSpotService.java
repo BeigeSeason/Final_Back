@@ -85,7 +85,7 @@ public class TourSpotService {
         long startTime = System.currentTimeMillis();
         String cacheKey = "tourspot:detail:" + tourSpotId;
 
-        // 1. 캐시 확인 (통계 데이터 제외)
+        // 1. 캐시 확인
         TourSpotDetailDto cached = tourSpotDetailRedisTemplate.opsForValue().get(cacheKey);
         if (cached != null) {
             // 실시간 통계 데이터 추가
@@ -115,7 +115,7 @@ public class TourSpotService {
             return result;
         }
 
-        if (retryCount > 20) {
+        if (retryCount > 10) {
             throw new RuntimeException("재시도 횟수 초과");
         }
 
@@ -141,7 +141,7 @@ public class TourSpotService {
                 detailDto.setMapX(tourSpot.getMapX());
                 detailDto.setMapY(tourSpot.getMapY());
                 detailDto.setNearSpots(findNearestTourSpots(tourSpot.getLocation(), tourSpot.getContentId()));
-                // 실시간 통계 데이터 추가
+                // 통계 데이터 추가
                 TourSpotStats stats = fetchStats(tourSpotId);
                 detailDto.setBookmarkCount(stats.getBookmarkCount());
                 // Redis 캐시 저장 (통계 데이터 포함하지 않음)
@@ -157,7 +157,6 @@ public class TourSpotService {
         } else {
             try {
                 Thread.sleep(150);
-                log.info("재시도 횟수 {} 회",retryCount);
                 return getTourSpotDetail(tourSpotId, retryCount + 1);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
@@ -329,7 +328,7 @@ public class TourSpotService {
     private TourSpotListDto mapToMinimalDto(SearchHit<TourSpots> hit) {
         TourSpots tourSpot = hit.getContent();
         return TourSpotListDto.builder()
-                .spotId(tourSpot.getContentId() )
+                .spotId(tourSpot.getContentId())
                 .title(tourSpot.getTitle())
                 .thumbnail(tourSpot.getFirstImage())
                 .build();
